@@ -1,12 +1,8 @@
 # Qredex PHP SDK
 
 Canonical PHP server SDK for the Qredex Integrations API.
+`qredex` for PHP is built for backend systems that need to create creators and links, issue IITs, lock PITs, and record paid orders and refunds without dealing with raw HTTP plumbing.
 
-This package is for machine-to-machine integrations only. It covers the canonical Qredex flow:
-
-`IIT -> PIT -> paid order -> refund`
-
-It does not include Merchant API endpoints, browser/runtime agent logic, Shopify embedded flows, or webhook receivers.
 
 ## Installation
 
