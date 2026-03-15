@@ -17,6 +17,7 @@ final readonly class CreatorsClient
 
     /**
      * @param array<string, mixed> $payload
+     * @throws \Exception
      */
     public function create(array $payload): Creator
     {
