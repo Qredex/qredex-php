@@ -1,0 +1,30 @@
+{
+  "name": "qredex/php",
+  "description": "Canonical PHP server SDK for the Qredex Integrations API.",
+  "type": "library",
+  "license": "Apache-2.0",
+  "require": {
+    "php": "^8.2",
+    "ext-json": "*",
+    "guzzlehttp/guzzle": "^7.9",
+    "psr/log": "^3.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "Qredex\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Qredex\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit"
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}
