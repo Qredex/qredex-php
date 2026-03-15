@@ -1,12 +1,38 @@
 <?php
 
+/**
+ *    ▄▄▄▄
+ *  ▄█▀▀███▄▄              █▄
+ *  ██    ██ ▄             ██
+ *  ██    ██ ████▄▄█▀█▄ ▄████ ▄█▀█▄▀██ ██▀
+ *  ██  ▄ ██ ██   ██▄█▀ ██ ██ ██▄█▀  ███
+ *   ▀█████▄▄█▀  ▄▀█▄▄▄▄█▀███▄▀█▄▄▄▄██ ██▄
+ *        ▀█
+ *
+ *  Copyright (C) 2026 — 2026, Qredex, LTD. All Rights Reserved.
+ *
+ *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ *  Licensed under the Apache License, Version 2.0. See LICENSE for the full license text.
+ *  You may not use this file except in compliance with that License.
+ *  Unless required by applicable law or agreed to in writing, software distributed under the
+ *  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ *  either express or implied. See the License for the specific language governing permissions
+ *  and limitations under the License.
+ *
+ *  If you need additional information or have any questions, please email: copyright@qredex.com
+ */
+
 declare(strict_types=1);
 
 namespace Qredex\Internal;
 
+use Closure;
 use Psr\Log\LoggerInterface;
 use Qredex\Config\RetryPolicy;
+use Qredex\Error\NetworkError;
 use Qredex\Error\QredexError;
+use Qredex\Error\ResponseDecodingError;
 use Qredex\Http\HttpTransportInterface;
 use Qredex\Http\TransportRequest;
 use Qredex\Http\TransportResponse;
@@ -24,6 +50,8 @@ final class HttpClient
         private readonly EventEmitter $events,
         private readonly ?LoggerInterface $logger = null,
         private readonly ?RetryPolicy $readRetry = null,
+        private readonly ?Closure $requestIdFactory = null,
+        private readonly ?string $requestIdHeader = null,
     ) {
     }
 
@@ -46,17 +74,18 @@ final class HttpClient
             } catch (QredexError $error) {
                 $lastError = $error;
 
-                if ($this->readRetry === null || $attempt >= $attempts || $error->status === null || !Retry::shouldRetryStatus($error->status)) {
+                if ($this->readRetry === null || $attempt >= $attempts || !$this->shouldRetry($error)) {
                     throw $error;
                 }
 
-                $delay = Retry::delayMs($this->readRetry, $attempt);
+                $delay = Retry::delayMs($this->readRetry, $attempt, $error->retryAfterSeconds);
                 $this->events->emit('retry_scheduled', [
                     'attempt' => $attempt,
                     'delay_ms' => $delay,
                     'max_attempts' => $this->readRetry->maxAttempts,
                     'method' => strtoupper($method),
                     'path' => $path,
+                    'retry_after_seconds' => $error->retryAfterSeconds,
                     'source' => 'read',
                 ]);
                 Retry::sleep($delay);
@@ -72,22 +101,29 @@ final class HttpClient
      */
     private function send(string $method, string $path, array $query, ?array $body): TransportResponse
     {
+        $clientRequestId = $this->newRequestId();
         $headers = $this->defaultHeaders + [
             'accept' => 'application/json',
-            'user-agent' => $this->defaultHeaders['user-agent'] ?? 'qredex-php/0.1.0',
+            'user-agent' => $this->defaultHeaders['user-agent'] ?? 'qredex-php/unknown',
             'authorization' => $this->tokenProvider->authorizationHeader(),
         ];
+
+        if ($this->requestIdHeader !== null) {
+            $headers[$this->requestIdHeader] = $clientRequestId;
+        }
 
         if ($body !== null) {
             $headers['content-type'] = 'application/json';
         }
 
         $this->events->emit('request', [
+            'client_request_id' => $clientRequestId,
             'method' => strtoupper($method),
             'path' => $path,
         ]);
 
         $this->logger?->debug('qredex.request', [
+            'client_request_id' => $clientRequestId,
             'method' => strtoupper($method),
             'path' => $path,
         ]);
@@ -107,6 +143,7 @@ final class HttpClient
         }
 
         $this->events->emit('response', [
+            'client_request_id' => $clientRequestId,
             'method' => strtoupper($method),
             'path' => $path,
             'status' => $response->status,
@@ -115,6 +152,7 @@ final class HttpClient
         ]);
 
         $this->logger?->info('qredex.response', [
+            'client_request_id' => $clientRequestId,
             'method' => strtoupper($method),
             'path' => $path,
             'status' => $response->status,
@@ -137,7 +175,7 @@ final class HttpClient
         $decoded = json_decode($response->body, true);
 
         if (!is_array($decoded)) {
-            throw new QredexError(
+            throw new ResponseDecodingError(
                 'Qredex returned a non-JSON response.',
                 status: $response->status,
                 requestId: $response->header('x-request-id'),
@@ -147,5 +185,25 @@ final class HttpClient
         }
 
         return $decoded;
+    }
+
+    private function shouldRetry(QredexError $error): bool
+    {
+        if ($error instanceof NetworkError) {
+            return true;
+        }
+
+        return $error->status !== null && Retry::shouldRetryStatus($error->status);
+    }
+
+    private function newRequestId(): string
+    {
+        $requestId = $this->requestIdFactory !== null ? ($this->requestIdFactory)() : bin2hex(random_bytes(16));
+
+        if (!is_string($requestId) || trim($requestId) === '') {
+            return bin2hex(random_bytes(16));
+        }
+
+        return $requestId;
     }
 }
