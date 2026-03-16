@@ -27,6 +27,6 @@ declare(strict_types=1);
 
 namespace Qredex\Error;
 
-final class RequestValidationError extends ValidationError
+class RequestValidationError extends ValidationError
 {
 }

@@ -9,8 +9,6 @@ use Qredex\Internal\ArrayMapper;
 
 /**
  * @template T
- *
- * @implements JsonSerializable<array<string, mixed>>
  */
 final readonly class Page implements JsonSerializable
 {

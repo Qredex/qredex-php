@@ -117,7 +117,7 @@ final readonly class QredexConfig
         $clientSecret = trim((string) ($env['QREDEX_CLIENT_SECRET'] ?? ''));
         $scope = $scope ?? ($env['QREDEX_SCOPE'] ?? null);
         $environment = $environment ?? ($env['QREDEX_ENVIRONMENT'] ?? 'production');
-        $baseUrl = $baseUrl ?? ((isset($env['QREDEX_BASE_URL']) && $env['QREDEX_BASE_URL'] !== null) ? (string) $env['QREDEX_BASE_URL'] : null);
+        $baseUrl = $baseUrl ?? ((isset($env['QREDEX_BASE_URL']) && $env['QREDEX_BASE_URL'] !== '') ? (string) $env['QREDEX_BASE_URL'] : null);
         $timeoutMs = $timeoutMs ?? self::parseTimeoutMs($env['QREDEX_TIMEOUT_MS'] ?? null);
 
         if ($clientId === '') {

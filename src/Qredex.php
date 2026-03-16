@@ -154,7 +154,7 @@ final readonly class Qredex
     private function sdkVersion(): string
     {
         try {
-            if (class_exists(\Composer\InstalledVersions::class) && method_exists(\Composer\InstalledVersions::class, 'getPrettyVersion')) {
+            if (class_exists(\Composer\InstalledVersions::class)) {
                 $version = \Composer\InstalledVersions::getPrettyVersion('qredex/php');
 
                 if (is_string($version) && trim($version) !== '') {
