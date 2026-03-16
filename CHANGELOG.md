@@ -25,16 +25,36 @@
 
 All notable changes to this SDK will be documented in this file.
 
+## [Unreleased]
+
 ## [0.1.0] — 2026-03-16
 
 ### Added
 
-- Typed request objects for the canonical write flow.
+- Typed request objects for the canonical write flow (`CreateCreatorRequest`, `CreateLinkRequest`, `IssueInfluenceIntentTokenRequest`, `LockPurchaseIntentRequest`, `RecordPaidOrderRequest`, `RecordRefundRequest`).
+- Typed list filter objects (`ListCreatorsFilter`, `ListLinksFilter`, `ListOrdersFilter`).
+- `NotFoundError` for API `404` responses.
+- `BodyType` backed enum replacing string constants on `TransportRequest`.
+- `Page` implements `Countable` and `IteratorAggregate` for natural PHP iteration.
+- `Qredex::SDK_VERSION` constant for reliable version identification.
+- `@throws` docblocks on all public resource methods.
 - Retry policy support for `Retry-After`, jitter, and read/network retry coverage.
-- Correlation id hooks and public-project hygiene files for CI, security, and contribution workflows.
+- Correlation id hooks via `requestIdFactory` and `requestIdHeader`.
+- CI, security policy, contribution guidelines, and release workflows.
+- 92 unit tests covering validators, config, error factory, models, and request objects.
+- PHPStan level 8 with zero errors.
+- Apache-2.0 copyright headers on all source files.
 
 ### Changed
 
+- `Qredex::bootstrap()` simplified to environment-only convenience (`?array $env` parameter only). Use `Qredex::init(QredexConfig::fromEnvironment(...))` for typed customization.
 - Split local request validation, API validation, and response decoding into distinct error types.
 - Promoted `QredexConfig::fromEnvironment()` as the preferred typed initialization path.
 - Removed raw auth entrypoints and non-canonical intent lookup helpers so the public API stays focused on the Integrations flow.
+- Eliminated double validation when using typed request objects.
+- Marked `OAuthToken` as `@internal` — not part of the public SDK surface.
+
+### Removed
+
+- `$overrides` bag parameter from `Qredex::bootstrap()`.
+- `TokenProvider::normalizeScope()` dead code.
