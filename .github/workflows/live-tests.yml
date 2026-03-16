@@ -1,0 +1,82 @@
+#    ▄▄▄▄
+#  ▄█▀▀███▄▄              █▄
+#  ██    ██ ▄             ██
+#  ██    ██ ████▄▄█▀█▄ ▄████ ▄█▀█▄▀██ ██▀
+#  ██  ▄ ██ ██   ██▄█▀ ██ ██ ██▄█▀  ███
+#   ▀█████▄▄█▀  ▄▀█▄▄▄▄█▀███▄▀█▄▄▄▄██ ██▄
+#        ▀█
+#
+#  Copyright (C) 2026 — 2026, Qredex, LTD. All Rights Reserved.
+#
+#  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+#
+#  Licensed under the Apache License, Version 2.0. See LICENSE for the full license text.
+#  You may not use this file except in compliance with that License.
+#  Unless required by applicable law or agreed to in writing, software distributed under the
+#  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+#  either express or implied. See the License for the specific language governing permissions
+#  and limitations under the License.
+#
+#  If you need additional information or have any questions, please email: copyright@qredex.com
+name: Live tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Live API environment to target.
+        required: true
+        default: staging
+        type: choice
+        options:
+          - production
+          - staging
+          - development
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-tests-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      QREDEX_LIVE_ENABLED: '1'
+      QREDEX_LIVE_ENVIRONMENT: ${{ inputs.environment }}
+      QREDEX_LIVE_CLIENT_ID: ${{ secrets.QREDEX_LIVE_CLIENT_ID }}
+      QREDEX_LIVE_CLIENT_SECRET: ${{ secrets.QREDEX_LIVE_CLIENT_SECRET }}
+      QREDEX_LIVE_STORE_ID: ${{ secrets.QREDEX_LIVE_STORE_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+          tools: composer:v2
+
+      - name: Validate live test secrets
+        shell: bash
+        run: |
+          for key in QREDEX_LIVE_CLIENT_ID QREDEX_LIVE_CLIENT_SECRET QREDEX_LIVE_STORE_ID; do
+            if [[ -z "${!key}" ]]; then
+              echo "Missing required GitHub Actions secret: ${key}" >&2
+              exit 1
+            fi
+          done
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run live tests
+        run: composer test:live

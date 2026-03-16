@@ -61,7 +61,8 @@
     }
   },
   "scripts": {
-    "test": "phpunit --configuration phpunit.xml.dist",
+    "test": "phpunit --configuration phpunit.xml.dist --exclude-group live",
+    "test:live": "phpunit --configuration phpunit.xml.dist --group live",
     "analyse": "phpstan analyse --configuration phpstan.neon.dist",
     "check": [
       "@test",

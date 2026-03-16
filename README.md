@@ -219,3 +219,16 @@ The SDK separates local validation, API validation, and protocol/response failur
 - [record-refund.php](examples/record-refund.php)
 - [list-orders.php](examples/list-orders.php)
 - [get-order-details.php](examples/get-order-details.php)
+
+## Testing
+
+- `composer test` runs unit and mocked transport tests only
+- `composer test:live` runs the opt-in live integration suite
+
+Live tests are skipped unless `QREDEX_LIVE_ENABLED=1` and the required `QREDEX_LIVE_*` variables are set.
+
+Start from [`.env.live.example`](.env.live.example) when wiring live test credentials.
+
+## Release Notes
+
+- [Releasing](docs/RELEASING.md)
