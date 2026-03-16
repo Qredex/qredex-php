@@ -23,43 +23,104 @@
 
 # Releasing `qredex/php`
 
-This repo is a single-package Composer SDK. The release source of truth is the Git tag.
+This repo is a single-package Composer SDK. The release source of truth is `Qredex::SDK_VERSION` in `src/Qredex.php`.
 
-## Local Release Commands
+## How to release
 
-1. Update [CHANGELOG.md](../CHANGELOG.md).
-2. Run local verification:
-   - `composer validate --strict`
-   - `composer install --no-interaction --prefer-dist`
-   - `composer test`
-   - `composer analyse`
-   - `composer install --no-interaction --prefer-dist --no-dev`
-3. Run the live integration suite against staging when credentials are available:
-   - start from [`.env.live.example`](../.env.live.example)
-   - `QREDEX_LIVE_ENABLED=1`
-   - `QREDEX_LIVE_ENVIRONMENT=staging`
-   - `QREDEX_LIVE_CLIENT_ID=...`
-   - `QREDEX_LIVE_CLIENT_SECRET=...`
-   - `QREDEX_LIVE_STORE_ID=...`
-   - `composer test:live`
-4. Create the release tag:
-   - GitHub Actions: `Create release tag`
-   - or push `vX.Y.Z` yourself if you are doing recovery work
+### Quick version bump
 
-## Automated GitHub Flow
+Use the version bump script for a guided release:
 
-The PHP release flow is GitHub-driven and tag-based:
+```bash
+# Bump version (runs validation checks automatically)
+./bump-version.sh 0.2.0
+# or
+composer version:bump 0.2.0
 
-1. [`.github/workflows/create-release-tag.yml`](../.github/workflows/create-release-tag.yml)
-   - creates `vX.Y.Z`
+# Skip validation if needed
+./bump-version.sh 0.2.0 --skip-validation
+```
+
+The script will:
+- Update `SDK_VERSION` in `src/Qredex.php`
+- Run `composer check` (unless skipped)
+- Stage the change
+- Display next steps
+
+### Manual release steps
+
+1. Update `Qredex::SDK_VERSION` in `src/Qredex.php` to the new version.
+2. Update [CHANGELOG.md](../CHANGELOG.md) with the release notes.
+3. Commit, push to `main`.
+4. That's it. Automation handles the rest.
+
+## What happens automatically
+
+1. [`.github/workflows/auto-release.yml`](../.github/workflows/auto-release.yml)
+   - Triggered on push to `main` when `src/Qredex.php` changes.
+   - Extracts `SDK_VERSION` from source code.
+   - Creates and pushes the `vX.Y.Z` tag if it does not already exist.
+
 2. [`.github/workflows/publish-packagist.yml`](../.github/workflows/publish-packagist.yml)
-   - validates the package
-   - installs dependencies
-   - runs `composer test`
-   - runs `composer analyse`
-   - performs a `--no-dev` package smoke install
-   - creates the GitHub Release
-   - optionally notifies Packagist through `PACKAGIST_WEBHOOK_URL`
+   - Triggered by the new `vX.Y.Z` tag.
+   - Validates the package (`composer validate --strict`).
+   - Installs dependencies and runs `composer test` + `composer analyse`.
+   - Performs a `--no-dev` package smoke install.
+   - Creates the GitHub Release with auto-generated notes.
+   - Notifies Packagist through `PACKAGIST_WEBHOOK_URL` if configured.
+
+## Packagist Setup
+
+### Initial Setup
+
+1. **Submit package to Packagist:**
+   - Go to https://packagist.org/packages/submit
+   - Enter repository URL: `https://github.com/Qredex/qredex-php`
+   - Click "Check" then "Submit"
+
+2. **Configure auto-update webhook:**
+   - On Packagist, go to your package page: https://packagist.org/packages/qredex/php
+   - Click "Show API Token" in the right sidebar
+   - Copy the webhook URL (looks like `https://packagist.org/api/update-package?username=...&apiToken=...`)
+   - In GitHub, go to Settings → Secrets and variables → Actions
+   - Create new secret: `PACKAGIST_WEBHOOK_URL` with the webhook URL
+
+3. **Verify setup:**
+   - Create a test release or trigger the workflow manually
+   - Check Actions tab for workflow success
+   - Check Packagist for the new version
+
+### Troubleshooting
+
+**Package not updating on Packagist:**
+- Verify `PACKAGIST_WEBHOOK_URL` secret is set in GitHub Actions
+- Check that webhook URL is valid on Packagist package settings
+- Manually trigger update on Packagist if needed (click "Update" button on package page)
+- Verify the repository is public or Packagist has access
+
+**Release not created:**
+- Check GitHub Actions logs for errors
+- Ensure `composer check` passes locally
+- Verify the tag format matches `v*.*.*` (e.g., `v0.1.0`)
+
+## Local pre-release verification
+
+Run these before pushing:
+
+```bash
+composer validate --strict
+composer install --no-interaction --prefer-dist
+composer test
+composer analyse
+composer install --no-interaction --prefer-dist --no-dev
+```
+
+## Manual release (fallback)
+
+If you need to create a tag manually:
+
+- GitHub Actions: **Actions → "Create release tag"** → enter version
+- Local CLI: `git tag -a vX.Y.Z -m "Release vX.Y.Z" && git push origin vX.Y.Z`
 
 ## Live Tests
 

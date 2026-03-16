@@ -67,7 +67,8 @@
     "check": [
       "@test",
       "@analyse"
-    ]
+    ],
+    "version:bump": "bash bump-version.sh"
   },
   "minimum-stability": "stable",
   "prefer-stable": true
