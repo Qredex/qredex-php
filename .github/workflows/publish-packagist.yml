@@ -119,8 +119,11 @@ jobs:
           PACKAGIST_WEBHOOK_URL: ${{ secrets.PACKAGIST_WEBHOOK_URL }}
         run: |
           if [[ -n "${PACKAGIST_WEBHOOK_URL}" ]]; then
-            curl --fail --silent --show-error -X POST "$PACKAGIST_WEBHOOK_URL"
-            echo "Packagist notified."
+            if curl --fail --silent --show-error -X POST "$PACKAGIST_WEBHOOK_URL"; then
+              echo "Packagist notified."
+            else
+              echo "::warning::Packagist webhook failed. The GitHub release was created. Update Packagist manually if needed."
+            fi
           else
             echo "PACKAGIST_WEBHOOK_URL is not configured. Skipping Packagist notification."
           fi
