@@ -28,7 +28,6 @@
 - `Qredex::init(QredexConfig $config): Qredex`
 - `QredexConfig::fromEnvironment(...): QredexConfig`
 - `Qredex::bootstrap(...): Qredex`
-  Deprecated as the primary documented initialization path. Kept for backward compatibility.
 
 ## Canonical Write Requests
 
@@ -68,14 +67,6 @@ Programmatic configuration should prefer enum values or enum arrays over raw sco
 
 - `intents()->issueInfluenceIntentToken(array|IssueInfluenceIntentTokenRequest): InfluenceIntent`
 - `intents()->lockPurchaseIntent(array|LockPurchaseIntentRequest): PurchaseIntent`
-- `intents()->get(string $pit): PurchaseIntent`
-  Deprecated from the default happy path. Keep for operational support use cases.
-- `intents()->getByTokenId(string $tokenId): PurchaseIntent`
-  Deprecated from the default happy path. Keep for operational support use cases.
-- `intents()->getByInfluenceIntentToken(string $iit): PurchaseIntent`
-  Deprecated from the default happy path. Keep for operational support use cases.
-- `intents()->latestUnlocked(int $hours = 24): PurchaseIntent`
-  Deprecated from the default happy path. Keep for operational support use cases.
 
 ### Orders
 
@@ -86,10 +77,3 @@ Programmatic configuration should prefer enum values or enum arrays over raw sco
 ### Refunds
 
 - `refunds()->recordRefund(array|RecordRefundRequest): OrderAttribution`
-
-## Auth
-
-- `auth()->issueToken(string|array|null $scope = null): OAuthToken`
-- `auth()->clearTokenCache(): void`
-
-This surface remains available for diagnostics and migration paths, but canonical integrations should rely on automatic token management.

@@ -137,13 +137,13 @@ Optional environment variables:
 
 Programmatic configuration should prefer `QredexScope` values over raw scope strings.
 
-Legacy convenience bootstrap remains available for backward compatibility, but the typed `QredexConfig::fromEnvironment()` path is the primary documented initialization flow.
+`Qredex::bootstrap()` remains available as the convenience path for environment-based initialization, while `QredexConfig::fromEnvironment()` is the most explicit typed option.
 
 ## Stability
 
 - The canonical typed write flow is the primary stable public surface.
-- Legacy array payloads remain supported for backward compatibility.
-- Deprecated helpers remain available for migration and operational support paths, but they are not part of the default happy path.
+- Legacy array payloads remain supported for concise adoption.
+- The public surface is intentionally limited to Integrations API resource operations and automatic client-credentials auth.
 
 ## Public API
 
@@ -168,16 +168,6 @@ $qredex->links()->list([...]);
 $qredex->links()->getStats($linkId);
 $qredex->orders()->list([...]);
 $qredex->orders()->getDetails($orderAttributionId);
-```
-
-Advanced or deprecated migration surface:
-
-```php
-$qredex->auth()->issueToken();
-$qredex->intents()->get($pitToken);
-$qredex->intents()->getByTokenId($tokenId);
-$qredex->intents()->getByInfluenceIntentToken($iitToken);
-$qredex->intents()->latestUnlocked();
 ```
 
 ## Errors

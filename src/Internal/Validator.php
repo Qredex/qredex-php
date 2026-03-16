@@ -162,18 +162,6 @@ final class Validator
         self::optionalIso8601Utc($payload, 'refunded_at');
     }
 
-    /**
-     * @param array<string, mixed> $payload
-     */
-    public static function latestUnlocked(array $payload): void
-    {
-        self::optionalPositiveInt($payload, 'hours');
-
-        if (isset($payload['hours']) && is_int($payload['hours']) && ($payload['hours'] < 1 || $payload['hours'] > 720)) {
-            self::fail('hours must be between 1 and 720.');
-        }
-    }
-
     public static function uuid(string $value, string $field): void
     {
         if (!preg_match(self::UUID_PATTERN, $value)) {

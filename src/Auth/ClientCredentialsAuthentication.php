@@ -29,7 +29,7 @@ namespace Qredex\Auth;
 
 use Qredex\Error\ConfigurationError;
 
-final readonly class ClientCredentialsAuthentication implements QredexAuthentication
+final readonly class ClientCredentialsAuthentication
 {
     /**
      * @param string|QredexScope|list<string|QredexScope>|null $scope

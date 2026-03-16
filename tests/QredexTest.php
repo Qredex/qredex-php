@@ -224,6 +224,6 @@ final class QredexTest extends TestCase
         ));
 
         $this->expectException(AuthenticationError::class);
-        $sdk->auth()->issueToken();
+        $sdk->orders()->list();
     }
 }

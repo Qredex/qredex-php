@@ -37,9 +37,4 @@ All notable changes to this SDK will be documented in this file.
 
 - Split local request validation, API validation, and response decoding into distinct error types.
 - Promoted `QredexConfig::fromEnvironment()` as the preferred typed initialization path.
-
-### Deprecated
-
-- `Qredex::bootstrap()` as the primary documented initialization path.
-- `Qredex::auth()` and `AccessTokenAuthentication` for canonical integrations usage.
-- Non-canonical intent lookup helpers as part of the default happy path.
+- Removed raw auth entrypoints and non-canonical intent lookup helpers so the public API stays focused on the Integrations flow.
