@@ -1,9 +1,6 @@
 # Dependencies
 /vendor/
 
-# Composer lock file for libraries (SDK consumers generate their own)
-composer.lock
-
 # Test caches
 .phpunit.result.cache
 
