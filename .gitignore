@@ -12,7 +12,7 @@ phpstan.cache/
 .phpstan.result.cache
 
 # IDE
-.idea/
+.idea/*
 *.swp
 *.swo
 *~
