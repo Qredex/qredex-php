@@ -37,6 +37,12 @@ It does not include Merchant API endpoints, browser/runtime logic, Shopify embed
 composer require qredex/php
 ```
 
+## Requirements
+
+- PHP 8.2 or newer
+- Composer 2
+- Machine-to-machine Qredex Integrations API credentials
+
 ## Quick Start
 
 ```php
@@ -133,6 +139,12 @@ Programmatic configuration should prefer `QredexScope` values over raw scope str
 
 Legacy convenience bootstrap remains available for backward compatibility, but the typed `QredexConfig::fromEnvironment()` path is the primary documented initialization flow.
 
+## Stability
+
+- The canonical typed write flow is the primary stable public surface.
+- Legacy array payloads remain supported for backward compatibility.
+- Deprecated helpers remain available for migration and operational support paths, but they are not part of the default happy path.
+
 ## Public API
 
 Stable canonical write surface:
@@ -190,6 +202,12 @@ The SDK separates local validation, API validation, and protocol/response failur
 - Read retries are opt-in and honor `Retry-After` when provided.
 - Client-side correlation ids can be emitted and optionally attached to outgoing headers.
 - The SDK does not log client secrets, bearer tokens, IITs, or PITs by default.
+
+## Releases
+
+- Releases are semantic-version Git tags such as `v0.2.0`.
+- GitHub Actions validates tagged releases, creates a GitHub Release, and can optionally notify Packagist through `PACKAGIST_WEBHOOK_URL`.
+- Composer consumers should install tagged releases from Packagist or the GitHub repository source configured in Composer.
 
 ## Docs
 

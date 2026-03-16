@@ -28,6 +28,24 @@ This document defines how any AI agent (or engineer acting as an agent) must wor
 This SDK is not a generic HTTP wrapper.
 It is a Qredex product surface and must remain aligned with the platform contract.
 
+## Engineering Standards
+
+Engineer this like a serious public infrastructure SDK.
+
+### Standards
+
+- Optimize for developer trust, safety, and long-term maintainability.
+- Prefer fewer, stronger primitives over wide surface area.
+- Make the SDK easy to use correctly and hard to misuse.
+- Hide raw HTTP/auth/plumbing where appropriate, but never hide important behavior.
+- Keep the public API small, explicit, typed, and predictable.
+- Favor clean names, immutable value objects, stable contracts, and framework-neutral design.
+- Prevent footguns: safe defaults, explicit config, clear errors, deterministic behavior, idempotency support, timeout/retry discipline, and no leaky internals.
+- Do more with less: remove anything redundant, speculative, or low-value.
+- Treat DX as part of the product: short happy path, strong docs, clean examples, good package metadata, and professional release/testing standards.
+- If a design choice improves durability, readability, and correct usage, prefer it over cleverness or abstraction for its own sake.
+- Build this to feel like a platform-grade SDK a company would trust in production.
+
 ## Efficiency, Quality, and Infrastructure Discipline
 
 Use the minimum context, tokens, tool calls, edits, and validation needed to complete the task correctly.

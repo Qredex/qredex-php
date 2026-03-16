@@ -27,17 +27,13 @@ declare(strict_types=1);
 
 namespace Qredex\Internal;
 
-use Closure;
 use Psr\Log\LoggerInterface;
-use Qredex\Auth\AccessTokenAuthentication;
 use Qredex\Auth\ClientCredentialsAuthentication;
-use Qredex\Auth\QredexAuthentication;
 use Qredex\Auth\QredexScope;
 use Qredex\Cache\CachedToken;
 use Qredex\Cache\MemoryTokenCache;
 use Qredex\Cache\TokenCacheInterface;
 use Qredex\Config\RetryPolicy;
-use Qredex\Error\ConfigurationError;
 use Qredex\Error\NetworkError;
 use Qredex\Error\QredexError;
 use Qredex\Http\HttpTransportInterface;
@@ -49,7 +45,7 @@ final class TokenProvider
     private readonly TokenCacheInterface $cache;
 
     public function __construct(
-        private readonly QredexAuthentication $auth,
+        private readonly ClientCredentialsAuthentication $auth,
         private readonly HttpTransportInterface $transport,
         private readonly int $timeoutMs,
         private readonly EventEmitter $events,
@@ -65,27 +61,8 @@ final class TokenProvider
         $this->cache->clear();
     }
 
-    /**
-     * @param string|QredexScope|list<string|QredexScope>|null $scope
-     */
-    public function issueToken(string|QredexScope|array|null $scope = null): OAuthToken
-    {
-        if (!$this->auth instanceof ClientCredentialsAuthentication) {
-            throw new ConfigurationError('Explicit token issuance requires client credentials auth.', errorCode: 'sdk_configuration_error');
-        }
-
-        $requestedScope = $this->normalizeScope($scope) ?? $this->auth->normalizedScope();
-        $shouldCache = $requestedScope === $this->auth->normalizedScope();
-
-        return $this->fetchToken($requestedScope, $shouldCache);
-    }
-
     public function authorizationHeader(): string
     {
-        if ($this->auth instanceof AccessTokenAuthentication) {
-            return 'Bearer ' . $this->resolveAccessToken($this->auth->accessToken);
-        }
-
         $cached = $this->cache->get();
         $refreshThreshold = time() + $this->auth->refreshWindowSeconds;
 
@@ -109,10 +86,6 @@ final class TokenProvider
 
     private function fetchToken(?string $scope, bool $shouldCache): OAuthToken
     {
-        if (!$this->auth instanceof ClientCredentialsAuthentication) {
-            throw new ConfigurationError('Client credentials auth is required to fetch a Qredex token.', errorCode: 'sdk_configuration_error');
-        }
-
         $retryPolicy = $this->retryPolicy ?? new RetryPolicy();
         $lastError = null;
 
@@ -195,7 +168,7 @@ final class TokenProvider
     /**
      * @param string|QredexScope|list<string|QredexScope>|null $scope
      */
-    private function normalizeScope(string|QredexScope|array|null $scope): ?string
+    public static function normalizeScope(string|QredexScope|array|null $scope): ?string
     {
         if ($scope === null) {
             return null;
@@ -217,17 +190,6 @@ final class TokenProvider
         ), static fn (string $value): bool => $value !== ''));
 
         return $parts === [] ? null : implode(' ', $parts);
-    }
-
-    private function resolveAccessToken(string|Closure $accessToken): string
-    {
-        $resolved = $accessToken instanceof Closure ? $accessToken() : $accessToken;
-
-        if (!is_string($resolved) || trim($resolved) === '') {
-            throw new ConfigurationError('Qredex access token resolved to an empty value.', errorCode: 'sdk_configuration_error');
-        }
-
-        return $resolved;
     }
 
     private function shouldRetry(QredexError $error): bool

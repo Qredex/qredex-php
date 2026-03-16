@@ -42,7 +42,6 @@ use Qredex\Resource\RefundsClient;
 
 final readonly class Qredex
 {
-    private QredexAuth $auth;
     private CreatorsClient $creators;
     private LinksClient $links;
     private IntentsClient $intents;
@@ -74,7 +73,6 @@ final readonly class Qredex
             requestIdHeader: $this->config->requestIdHeader,
         );
 
-        $this->auth = new QredexAuth($tokenProvider);
         $this->creators = new CreatorsClient($http);
         $this->links = new LinksClient($http);
         $this->intents = new IntentsClient($http);
@@ -88,8 +86,6 @@ final readonly class Qredex
     }
 
     /**
-     * @deprecated Prefer Qredex::init(QredexConfig::fromEnvironment(...)) for a typed bootstrap path.
-     *
      * @param array<string, string|null>|null $env
      * @param array<string, mixed> $overrides
      */
@@ -112,14 +108,6 @@ final readonly class Qredex
             requestIdFactory: is_callable($overrides['requestIdFactory'] ?? null) ? $overrides['requestIdFactory'] : null,
             requestIdHeader: isset($overrides['requestIdHeader']) ? (string) $overrides['requestIdHeader'] : null,
         ));
-    }
-
-    /**
-     * @deprecated Qredex manages tokens automatically for canonical SDK usage.
-     */
-    public function auth(): QredexAuth
-    {
-        return $this->auth;
     }
 
     public function creators(): CreatorsClient

@@ -30,7 +30,6 @@ namespace Qredex\Config;
 use Closure;
 use Psr\Log\LoggerInterface;
 use Qredex\Auth\ClientCredentialsAuthentication;
-use Qredex\Auth\QredexAuthentication;
 use Qredex\Auth\QredexScope;
 use Qredex\Cache\TokenCacheInterface;
 use Qredex\Error\ConfigurationError;
@@ -39,7 +38,7 @@ use Qredex\Http\HttpTransportInterface;
 final readonly class QredexConfig
 {
     public function __construct(
-        public QredexAuthentication $auth,
+        public ClientCredentialsAuthentication $auth,
         public QredexEnvironment $environment = QredexEnvironment::PRODUCTION,
         public ?string $baseUrl = null,
         public int $timeoutMs = 10_000,

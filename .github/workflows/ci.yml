@@ -37,7 +37,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -57,3 +57,6 @@ jobs:
 
       - name: Run static analysis
         run: composer analyse
+
+      - name: Package smoke test
+        run: composer install --no-interaction --prefer-dist --no-dev
