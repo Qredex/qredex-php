@@ -1,0 +1,31 @@
+# Dependencies
+/vendor/
+
+# Composer lock file for libraries (SDK consumers generate their own)
+composer.lock
+
+# Test caches
+.phpunit.result.cache
+
+# Static analysis caches
+phpstan.cache/
+.phpstan.result.cache
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+/build/
+/dist/
