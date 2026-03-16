@@ -198,10 +198,14 @@ final class HttpClient
 
     private function newRequestId(): string
     {
-        $requestId = $this->requestIdFactory !== null ? ($this->requestIdFactory)() : bin2hex(random_bytes(16));
+        try {
+            $requestId = $this->requestIdFactory !== null ? ($this->requestIdFactory)() : bin2hex(random_bytes(16));
+        } catch (\Throwable) {
+            return uniqid('qdx_', true);
+        }
 
         if (!is_string($requestId) || trim($requestId) === '') {
-            return bin2hex(random_bytes(16));
+            return uniqid('qdx_', true);
         }
 
         return $requestId;

@@ -1,13 +1,41 @@
+<!--
+     ▄▄▄▄
+   ▄█▀▀███▄▄              █▄
+   ██    ██ ▄             ██
+   ██    ██ ████▄▄█▀█▄ ▄████ ▄█▀█▄▀██ ██▀
+   ██  ▄ ██ ██   ██▄█▀ ██ ██ ██▄█▀  ███
+    ▀█████▄▄█▀  ▄▀█▄▄▄▄█▀███▄▀█▄▄▄▄██ ██▄
+         ▀█
+
+   Copyright (C) 2026 — 2026, Qredex, LTD. All Rights Reserved.
+
+   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+
+   Licensed under the Apache License, Version 2.0. See LICENSE for the full license text.
+   You may not use this file except in compliance with that License.
+   Unless required by applicable law or agreed to in writing, software distributed under the
+   License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+   either express or implied. See the License for the specific language governing permissions
+   and limitations under the License.
+
+   If you need additional information or have any questions, please email: copyright@qredex.com
+-->
+
 # Errors
 
-Qredex PHP SDK normalizes API and transport failures into a small typed hierarchy.
+Qredex PHP SDK normalizes failures into a small typed hierarchy with clearer boundaries.
 
-## Error Types
+## Validation Boundaries
 
-- `Qredex\Error\ConfigurationError`
-  Raised before a request is made when local SDK configuration is invalid.
-- `Qredex\Error\ValidationError`
-  Raised for local request validation failures and API `400` / `422` responses.
+- `Qredex\Error\RequestValidationError`
+  Raised before a request is sent when the local SDK input is invalid.
+- `Qredex\Error\ApiValidationError`
+  Raised for API `400` and `422` validation responses.
+- `Qredex\Error\ResponseDecodingError`
+  Raised when the API response shape is invalid or cannot be decoded into the SDK model.
+
+## Auth, Policy, and Transport
+
 - `Qredex\Error\AuthenticationError`
   Raised for API `401` responses.
 - `Qredex\Error\AuthorizationError`
@@ -20,10 +48,12 @@ Qredex PHP SDK normalizes API and transport failures into a small typed hierarch
   Raised for any other non-success API response.
 - `Qredex\Error\NetworkError`
   Raised when no valid response is received.
+- `Qredex\Error\ConfigurationError`
+  Raised before requests are made when local SDK configuration is invalid.
 
 ## Preserved Metadata
 
-Every `QredexError` preserves these fields when available:
+Every `Qredex\Error\QredexError` preserves these fields when available:
 
 - `status`
 - `errorCode`
@@ -38,16 +68,15 @@ Every `QredexError` preserves these fields when available:
 ```php
 <?php
 
-use Qredex\Error\ConflictError;
+use Qredex\Error\ApiValidationError;
 use Qredex\Error\QredexError;
+use Qredex\Error\RequestValidationError;
 
 try {
-    $qredex->orders()->recordPaidOrder([
-        'store_id' => '61abc354-dd8d-4a23-be02-ece77b1b4da6',
-        'external_order_id' => 'order-100045',
-        'currency' => 'USD',
-    ]);
-} catch (ConflictError $error) {
+    $qredex->orders()->recordPaidOrder([...]);
+} catch (RequestValidationError $error) {
+    echo $error->getMessage();
+} catch (ApiValidationError $error) {
     echo $error->status;
     echo $error->errorCode;
     echo $error->requestId;
@@ -55,9 +84,3 @@ try {
     echo $error->getMessage();
 }
 ```
-
-## Notes
-
-- `INGESTED` and `IDEMPOTENT` are success concepts in the Qredex ingestion model, but the current Integrations API responses do not expose a separate ingestion decision field in successful response bodies.
-- Conflict and policy outcomes are surfaced through `409` responses and become `ConflictError`.
-- Raw response text is preserved for debugging, but the SDK itself does not log secrets or raw tokens.

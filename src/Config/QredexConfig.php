@@ -31,6 +31,7 @@ use Closure;
 use Psr\Log\LoggerInterface;
 use Qredex\Auth\ClientCredentialsAuthentication;
 use Qredex\Auth\QredexAuthentication;
+use Qredex\Auth\QredexScope;
 use Qredex\Cache\TokenCacheInterface;
 use Qredex\Error\ConfigurationError;
 use Qredex\Http\HttpTransportInterface;
@@ -93,10 +94,11 @@ final readonly class QredexConfig
     /**
      * @param array<string, string|null>|null $env
      * @param array<string, string> $defaultHeaders
+     * @param string|QredexScope|list<string|QredexScope>|null $scope
      */
     public static function fromEnvironment(
         ?array $env = null,
-        string|array|null $scope = null,
+        string|QredexScope|array|null $scope = null,
         QredexEnvironment|string|null $environment = null,
         ?string $baseUrl = null,
         ?int $timeoutMs = null,

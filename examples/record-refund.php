@@ -1,18 +1,46 @@
 <?php
 
+/**
+ *    ▄▄▄▄
+ *  ▄█▀▀███▄▄              █▄
+ *  ██    ██ ▄             ██
+ *  ██    ██ ████▄▄█▀█▄ ▄████ ▄█▀█▄▀██ ██▀
+ *  ██  ▄ ██ ██   ██▄█▀ ██ ██ ██▄█▀  ███
+ *   ▀█████▄▄█▀  ▄▀█▄▄▄▄█▀███▄▀█▄▄▄▄██ ██▄
+ *        ▀█
+ *
+ *  Copyright (C) 2026 — 2026, Qredex, LTD. All Rights Reserved.
+ *
+ *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ *  Licensed under the Apache License, Version 2.0. See LICENSE for the full license text.
+ *  You may not use this file except in compliance with that License.
+ *  Unless required by applicable law or agreed to in writing, software distributed under the
+ *  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ *  either express or implied. See the License for the specific language governing permissions
+ *  and limitations under the License.
+ *
+ *  If you need additional information or have any questions, please email: copyright@qredex.com
+ */
+
 declare(strict_types=1);
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
+use Qredex\Auth\QredexScope;
+use Qredex\Config\QredexConfig;
 use Qredex\Qredex;
+use Qredex\Request\RecordRefundRequest;
 
-$qredex = Qredex::bootstrap();
+$qredex = Qredex::init(QredexConfig::fromEnvironment(
+    scope: QredexScope::ORDERS_WRITE,
+));
 
-$refund = $qredex->refunds()->recordRefund([
-    'store_id' => '61abc354-dd8d-4a23-be02-ece77b1b4da6',
-    'external_order_id' => 'order-100045',
-    'external_refund_id' => 'refund-100045-1',
-    'refund_total' => 25.00,
-]);
+$refund = $qredex->refunds()->recordRefund(new RecordRefundRequest(
+    storeId: '61abc354-dd8d-4a23-be02-ece77b1b4da6',
+    externalOrderId: 'order-100045',
+    externalRefundId: 'refund-100045-1',
+    refundTotal: 25.00,
+));
 
 var_dump($refund);

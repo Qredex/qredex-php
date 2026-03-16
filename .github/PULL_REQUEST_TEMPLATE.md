@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
      ▄▄▄▄
    ▄█▀▀███▄▄              █▄
@@ -21,16 +20,9 @@
 
    If you need additional information or have any questions, please email: copyright@qredex.com
 -->
-<phpunit
-  bootstrap="vendor/autoload.php"
-  colors="true"
-  failOnRisky="true"
-  failOnWarning="true"
-  beStrictAboutOutputDuringTests="true"
->
-  <testsuites>
-    <testsuite name="qredex-sdk">
-      <directory>tests</directory>
-    </testsuite>
-  </testsuites>
-</phpunit>
+
+## Summary
+
+## Public API impact
+
+## Validation

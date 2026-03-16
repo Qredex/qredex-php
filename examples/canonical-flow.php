@@ -31,9 +31,17 @@ use Qredex\Auth\QredexScope;
 use Qredex\Config\QredexConfig;
 use Qredex\Qredex;
 use Qredex\Request\CreateLinkRequest;
+use Qredex\Request\IssueInfluenceIntentTokenRequest;
+use Qredex\Request\LockPurchaseIntentRequest;
+use Qredex\Request\RecordPaidOrderRequest;
+use Qredex\Request\RecordRefundRequest;
 
 $qredex = Qredex::init(QredexConfig::fromEnvironment(
-    scope: QredexScope::LINKS_WRITE,
+    scope: [
+        QredexScope::LINKS_WRITE,
+        QredexScope::INTENTS_WRITE,
+        QredexScope::ORDERS_WRITE,
+    ],
 ));
 
 $link = $qredex->links()->create(new CreateLinkRequest(
@@ -44,4 +52,30 @@ $link = $qredex->links()->create(new CreateLinkRequest(
     attributionWindowDays: 30,
 ));
 
-var_dump($link);
+$iit = $qredex->intents()->issueInfluenceIntentToken(new IssueInfluenceIntentTokenRequest(
+    linkId: $link->id,
+    landingPath: '/products/spring-launch',
+));
+
+$pit = $qredex->intents()->lockPurchaseIntent(new LockPurchaseIntentRequest(
+    token: $iit->token,
+    source: 'backend-cart',
+));
+
+$order = $qredex->orders()->recordPaidOrder(new RecordPaidOrderRequest(
+    storeId: $link->storeId,
+    externalOrderId: 'order-100045',
+    currency: 'USD',
+    orderNumber: '100045',
+    totalPrice: 110.00,
+    purchaseIntentToken: $pit->token,
+));
+
+$refund = $qredex->refunds()->recordRefund(new RecordRefundRequest(
+    storeId: $link->storeId,
+    externalOrderId: 'order-100045',
+    externalRefundId: 'refund-100045-1',
+    refundTotal: 25.00,
+));
+
+var_dump($link, $iit, $pit, $order, $refund);

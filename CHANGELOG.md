@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
      ▄▄▄▄
    ▄█▀▀███▄▄              █▄
@@ -21,16 +20,26 @@
 
    If you need additional information or have any questions, please email: copyright@qredex.com
 -->
-<phpunit
-  bootstrap="vendor/autoload.php"
-  colors="true"
-  failOnRisky="true"
-  failOnWarning="true"
-  beStrictAboutOutputDuringTests="true"
->
-  <testsuites>
-    <testsuite name="qredex-sdk">
-      <directory>tests</directory>
-    </testsuite>
-  </testsuites>
-</phpunit>
+
+# Changelog
+
+All notable changes to this SDK will be documented in this file.
+
+## Unreleased
+
+### Added
+
+- Typed request objects for the canonical write flow.
+- Retry policy support for `Retry-After`, jitter, and read/network retry coverage.
+- Correlation id hooks and public-project hygiene files for CI, security, and contribution workflows.
+
+### Changed
+
+- Split local request validation, API validation, and response decoding into distinct error types.
+- Promoted `QredexConfig::fromEnvironment()` as the preferred typed initialization path.
+
+### Deprecated
+
+- `Qredex::bootstrap()` as the primary documented initialization path.
+- `Qredex::auth()` and `AccessTokenAuthentication` for canonical integrations usage.
+- Non-canonical intent lookup helpers as part of the default happy path.

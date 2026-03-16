@@ -25,19 +25,17 @@
 
 declare(strict_types=1);
 
-require dirname(__DIR__) . '/vendor/autoload.php';
+namespace Qredex\Auth;
 
-use Qredex\Auth\QredexScope;
-use Qredex\Config\QredexConfig;
-use Qredex\Qredex;
-
-$qredex = Qredex::init(QredexConfig::fromEnvironment(
-    scope: QredexScope::ORDERS_READ,
-));
-
-$orders = $qredex->orders()->list([
-    'page' => 0,
-    'size' => 25,
-]);
-
-var_dump($orders);
+enum QredexScope: string
+{
+    case API = 'direct:api';
+    case LINKS_READ = 'direct:links:read';
+    case LINKS_WRITE = 'direct:links:write';
+    case CREATORS_READ = 'direct:creators:read';
+    case CREATORS_WRITE = 'direct:creators:write';
+    case ORDERS_READ = 'direct:orders:read';
+    case ORDERS_WRITE = 'direct:orders:write';
+    case INTENTS_READ = 'direct:intents:read';
+    case INTENTS_WRITE = 'direct:intents:write';
+}

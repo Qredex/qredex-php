@@ -1,15 +1,34 @@
 <?php
 
+/**
+ *    ▄▄▄▄
+ *  ▄█▀▀███▄▄              █▄
+ *  ██    ██ ▄             ██
+ *  ██    ██ ████▄▄█▀█▄ ▄████ ▄█▀█▄▀██ ██▀
+ *  ██  ▄ ██ ██   ██▄█▀ ██ ██ ██▄█▀  ███
+ *   ▀█████▄▄█▀  ▄▀█▄▄▄▄█▀███▄▀█▄▄▄▄██ ██▄
+ *        ▀█
+ *
+ *  Copyright (C) 2026 — 2026, Qredex, LTD. All Rights Reserved.
+ *
+ *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ *  Licensed under the Apache License, Version 2.0. See LICENSE for the full license text.
+ *  You may not use this file except in compliance with that License.
+ *  Unless required by applicable law or agreed to in writing, software distributed under the
+ *  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ *  either express or implied. See the License for the specific language governing permissions
+ *  and limitations under the License.
+ *
+ *  If you need additional information or have any questions, please email: copyright@qredex.com
+ */
+
 declare(strict_types=1);
 
 namespace Qredex;
 
-use Closure;
-use Qredex\Auth\ClientCredentialsAuthentication;
 use Qredex\Cache\MemoryTokenCache;
 use Qredex\Config\QredexConfig;
-use Qredex\Config\QredexEnvironment;
-use Qredex\Error\ConfigurationError;
 use Qredex\Http\GuzzleTransport;
 use Qredex\Http\HttpTransportInterface;
 use Qredex\Internal\EventEmitter;
@@ -51,6 +70,8 @@ final readonly class Qredex
             events: $eventEmitter,
             logger: $this->config->logger,
             readRetry: $this->config->readRetry,
+            requestIdFactory: $this->config->requestIdFactory,
+            requestIdHeader: $this->config->requestIdHeader,
         );
 
         $this->auth = new QredexAuth($tokenProvider);
@@ -67,54 +88,35 @@ final readonly class Qredex
     }
 
     /**
+     * @deprecated Prefer Qredex::init(QredexConfig::fromEnvironment(...)) for a typed bootstrap path.
+     *
      * @param array<string, string|null>|null $env
      * @param array<string, mixed> $overrides
      */
     public static function bootstrap(?array $env = null, array $overrides = []): self
     {
-        $env = array_merge($_SERVER, $_ENV, $env ?? []);
-        $clientId = trim((string) ($env['QREDEX_CLIENT_ID'] ?? ''));
-        $clientSecret = trim((string) ($env['QREDEX_CLIENT_SECRET'] ?? ''));
-        $scope = $overrides['scope'] ?? ($env['QREDEX_SCOPE'] ?? null);
-        $environmentValue = $overrides['environment'] ?? ($env['QREDEX_ENVIRONMENT'] ?? 'production');
-
-        if ($clientId === '') {
-            throw new ConfigurationError('Qredex bootstrap requires QREDEX_CLIENT_ID.', errorCode: 'sdk_configuration_error');
-        }
-
-        if ($clientSecret === '') {
-            throw new ConfigurationError('Qredex bootstrap requires QREDEX_CLIENT_SECRET.', errorCode: 'sdk_configuration_error');
-        }
-
-        $eventListener = $overrides['eventListener'] ?? null;
-        $closure = $eventListener instanceof Closure
-            ? $eventListener
-            : (is_callable($eventListener) ? Closure::fromCallable($eventListener) : null);
-
-        $config = new QredexConfig(
-            auth: new ClientCredentialsAuthentication(
-                clientId: $clientId,
-                clientSecret: $clientSecret,
-                scope: $scope,
-            ),
-            environment: $environmentValue instanceof QredexEnvironment
-                ? $environmentValue
-                : QredexEnvironment::fromString((string) $environmentValue),
-            baseUrl: isset($overrides['baseUrl']) ? (string) $overrides['baseUrl'] : ((isset($env['QREDEX_BASE_URL']) && $env['QREDEX_BASE_URL'] !== null) ? (string) $env['QREDEX_BASE_URL'] : null),
-            timeoutMs: (int) ($overrides['timeoutMs'] ?? ($env['QREDEX_TIMEOUT_MS'] ?? 10_000)),
+        return self::init(QredexConfig::fromEnvironment(
+            env: $env,
+            scope: $overrides['scope'] ?? null,
+            environment: $overrides['environment'] ?? null,
+            baseUrl: isset($overrides['baseUrl']) ? (string) $overrides['baseUrl'] : null,
+            timeoutMs: self::legacyTimeoutOverride($overrides['timeoutMs'] ?? null),
             transport: $overrides['transport'] ?? null,
             tokenCache: $overrides['tokenCache'] ?? null,
             authRetry: $overrides['authRetry'] ?? null,
             readRetry: $overrides['readRetry'] ?? null,
             logger: $overrides['logger'] ?? null,
-            eventListener: $closure,
+            eventListener: is_callable($overrides['eventListener'] ?? null) ? $overrides['eventListener'] : null,
             defaultHeaders: is_array($overrides['defaultHeaders'] ?? null) ? $overrides['defaultHeaders'] : [],
             userAgentSuffix: isset($overrides['userAgentSuffix']) ? (string) $overrides['userAgentSuffix'] : '',
-        );
-
-        return self::init($config);
+            requestIdFactory: is_callable($overrides['requestIdFactory'] ?? null) ? $overrides['requestIdFactory'] : null,
+            requestIdHeader: isset($overrides['requestIdHeader']) ? (string) $overrides['requestIdHeader'] : null,
+        ));
     }
 
+    /**
+     * @deprecated Qredex manages tokens automatically for canonical SDK usage.
+     */
     public function auth(): QredexAuth
     {
         return $this->auth;
@@ -156,8 +158,38 @@ final readonly class Qredex
     private function defaultHeaders(QredexConfig $config): array
     {
         $headers = $config->defaultHeaders;
-        $headers['user-agent'] = 'qredex-php/0.1.0' . ($config->userAgentSuffix !== '' ? ' ' . trim($config->userAgentSuffix) : '');
+        $headers['user-agent'] = 'qredex-php/' . $this->sdkVersion() . ($config->userAgentSuffix !== '' ? ' ' . trim($config->userAgentSuffix) : '');
 
         return $headers;
+    }
+
+    private function sdkVersion(): string
+    {
+        try {
+            if (class_exists(\Composer\InstalledVersions::class) && method_exists(\Composer\InstalledVersions::class, 'getPrettyVersion')) {
+                $version = \Composer\InstalledVersions::getPrettyVersion('qredex/php');
+
+                if (is_string($version) && trim($version) !== '') {
+                    return $version;
+                }
+            }
+        } catch (\Throwable) {
+            return 'unknown';
+        }
+
+        return 'unknown';
+    }
+
+    private static function legacyTimeoutOverride(mixed $timeoutMs): ?int
+    {
+        if (is_int($timeoutMs)) {
+            return $timeoutMs;
+        }
+
+        if (is_string($timeoutMs) && ctype_digit($timeoutMs)) {
+            return (int) $timeoutMs;
+        }
+
+        return null;
     }
 }

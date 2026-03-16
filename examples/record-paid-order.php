@@ -1,20 +1,48 @@
 <?php
 
+/**
+ *    ▄▄▄▄
+ *  ▄█▀▀███▄▄              █▄
+ *  ██    ██ ▄             ██
+ *  ██    ██ ████▄▄█▀█▄ ▄████ ▄█▀█▄▀██ ██▀
+ *  ██  ▄ ██ ██   ██▄█▀ ██ ██ ██▄█▀  ███
+ *   ▀█████▄▄█▀  ▄▀█▄▄▄▄█▀███▄▀█▄▄▄▄██ ██▄
+ *        ▀█
+ *
+ *  Copyright (C) 2026 — 2026, Qredex, LTD. All Rights Reserved.
+ *
+ *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ *  Licensed under the Apache License, Version 2.0. See LICENSE for the full license text.
+ *  You may not use this file except in compliance with that License.
+ *  Unless required by applicable law or agreed to in writing, software distributed under the
+ *  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ *  either express or implied. See the License for the specific language governing permissions
+ *  and limitations under the License.
+ *
+ *  If you need additional information or have any questions, please email: copyright@qredex.com
+ */
+
 declare(strict_types=1);
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
+use Qredex\Auth\QredexScope;
+use Qredex\Config\QredexConfig;
 use Qredex\Qredex;
+use Qredex\Request\RecordPaidOrderRequest;
 
-$qredex = Qredex::bootstrap();
+$qredex = Qredex::init(QredexConfig::fromEnvironment(
+    scope: QredexScope::ORDERS_WRITE,
+));
 
-$order = $qredex->orders()->recordPaidOrder([
-    'store_id' => '61abc354-dd8d-4a23-be02-ece77b1b4da6',
-    'external_order_id' => 'order-100045',
-    'order_number' => '100045',
-    'currency' => 'USD',
-    'total_price' => 110.00,
-    'purchase_intent_token' => 'eyJhbGciOiJIUzI1NiJ9.example',
-]);
+$order = $qredex->orders()->recordPaidOrder(new RecordPaidOrderRequest(
+    storeId: '61abc354-dd8d-4a23-be02-ece77b1b4da6',
+    externalOrderId: 'order-100045',
+    currency: 'USD',
+    orderNumber: '100045',
+    totalPrice: 110.00,
+    purchaseIntentToken: 'eyJhbGciOiJIUzI1NiJ9.example',
+));
 
 var_dump($order);

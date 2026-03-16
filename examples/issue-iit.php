@@ -1,17 +1,45 @@
 <?php
 
+/**
+ *    ▄▄▄▄
+ *  ▄█▀▀███▄▄              █▄
+ *  ██    ██ ▄             ██
+ *  ██    ██ ████▄▄█▀█▄ ▄████ ▄█▀█▄▀██ ██▀
+ *  ██  ▄ ██ ██   ██▄█▀ ██ ██ ██▄█▀  ███
+ *   ▀█████▄▄█▀  ▄▀█▄▄▄▄█▀███▄▀█▄▄▄▄██ ██▄
+ *        ▀█
+ *
+ *  Copyright (C) 2026 — 2026, Qredex, LTD. All Rights Reserved.
+ *
+ *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ *  Licensed under the Apache License, Version 2.0. See LICENSE for the full license text.
+ *  You may not use this file except in compliance with that License.
+ *  Unless required by applicable law or agreed to in writing, software distributed under the
+ *  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ *  either express or implied. See the License for the specific language governing permissions
+ *  and limitations under the License.
+ *
+ *  If you need additional information or have any questions, please email: copyright@qredex.com
+ */
+
 declare(strict_types=1);
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
+use Qredex\Auth\QredexScope;
+use Qredex\Config\QredexConfig;
 use Qredex\Qredex;
+use Qredex\Request\IssueInfluenceIntentTokenRequest;
 
-$qredex = Qredex::bootstrap();
+$qredex = Qredex::init(QredexConfig::fromEnvironment(
+    scope: QredexScope::INTENTS_WRITE,
+));
 
-$iit = $qredex->intents()->issueInfluenceIntentToken([
-    'link_id' => '2a6ce204-5651-4f52-b135-e42ff0f8d1b5',
-    'landing_path' => '/products/spring-launch',
-    'referrer' => 'https://creator.example/post/123',
-]);
+$iit = $qredex->intents()->issueInfluenceIntentToken(new IssueInfluenceIntentTokenRequest(
+    linkId: '2a6ce204-5651-4f52-b135-e42ff0f8d1b5',
+    landingPath: '/products/spring-launch',
+    referrer: 'https://creator.example/post/123',
+));
 
 var_dump($iit);

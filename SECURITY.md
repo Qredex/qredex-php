@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
      ▄▄▄▄
    ▄█▀▀███▄▄              █▄
@@ -21,16 +20,16 @@
 
    If you need additional information or have any questions, please email: copyright@qredex.com
 -->
-<phpunit
-  bootstrap="vendor/autoload.php"
-  colors="true"
-  failOnRisky="true"
-  failOnWarning="true"
-  beStrictAboutOutputDuringTests="true"
->
-  <testsuites>
-    <testsuite name="qredex-sdk">
-      <directory>tests</directory>
-    </testsuite>
-  </testsuites>
-</phpunit>
+
+# Security Policy
+
+Please do not open public GitHub issues for suspected security vulnerabilities.
+
+Until a dedicated security mailbox is published, report vulnerabilities privately to [copyright@qredex.com](mailto:copyright@qredex.com) with the subject line `[Security] Qredex PHP SDK`.
+
+Include:
+
+- affected SDK version
+- impact summary
+- reproduction details
+- any suggested mitigation or patch context

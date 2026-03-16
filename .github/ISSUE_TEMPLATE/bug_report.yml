@@ -1,0 +1,52 @@
+#    ▄▄▄▄
+#  ▄█▀▀███▄▄              █▄
+#  ██    ██ ▄             ██
+#  ██    ██ ████▄▄█▀█▄ ▄████ ▄█▀█▄▀██ ██▀
+#  ██  ▄ ██ ██   ██▄█▀ ██ ██ ██▄█▀  ███
+#   ▀█████▄▄█▀  ▄▀█▄▄▄▄█▀███▄▀█▄▄▄▄██ ██▄
+#        ▀█
+#
+#  Copyright (C) 2026 — 2026, Qredex, LTD. All Rights Reserved.
+#
+#  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+#
+#  Licensed under the Apache License, Version 2.0. See LICENSE for the full license text.
+#  You may not use this file except in compliance with that License.
+#  Unless required by applicable law or agreed to in writing, software distributed under the
+#  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+#  either express or implied. See the License for the specific language governing permissions
+#  and limitations under the License.
+#
+#  If you need additional information or have any questions, please email: copyright@qredex.com
+name: Bug Report
+description: Report a reproducible problem in the Qredex PHP SDK.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the observed behavior and the expected behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Share the smallest code sample or request flow that reproduces the problem.
+    validations:
+      required: true
+  - type: input
+    id: php_version
+    attributes:
+      label: PHP version
+      description: "Example: 8.2.17"
+    validations:
+      required: true
+  - type: input
+    id: sdk_version
+    attributes:
+      label: SDK version
+      description: "Example: 0.2.0"
+    validations:
+      required: true

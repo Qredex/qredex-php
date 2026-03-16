@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
      ▄▄▄▄
    ▄█▀▀███▄▄              █▄
@@ -21,16 +20,30 @@
 
    If you need additional information or have any questions, please email: copyright@qredex.com
 -->
-<phpunit
-  bootstrap="vendor/autoload.php"
-  colors="true"
-  failOnRisky="true"
-  failOnWarning="true"
-  beStrictAboutOutputDuringTests="true"
->
-  <testsuites>
-    <testsuite name="qredex-sdk">
-      <directory>tests</directory>
-    </testsuite>
-  </testsuites>
-</phpunit>
+
+# Contributing
+
+This repository publishes the public Qredex PHP Integrations SDK. Contributions should preserve the SDK as a focused server-side package for the canonical Qredex backend flow.
+
+## Ground Rules
+
+- Keep the SDK Integrations-only. Do not add Merchant, Internal, browser, or embedded-app flows.
+- Prefer fewer public primitives with stronger typing over convenience sprawl.
+- Treat public method names, argument shapes, and DTOs as product surface, not local implementation details.
+- Avoid logging or exposing secrets, bearer tokens, IITs, or PITs.
+
+## Local Validation
+
+Run the repository checks before opening a pull request:
+
+```bash
+composer install
+composer test
+composer analyse
+```
+
+## Pull Requests
+
+- Include tests for every behavior change.
+- Update `README.md`, docs, and examples when public behavior changes.
+- Document deprecations and breaking changes explicitly in `CHANGELOG.md`.

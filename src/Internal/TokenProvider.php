@@ -32,6 +32,7 @@ use Psr\Log\LoggerInterface;
 use Qredex\Auth\AccessTokenAuthentication;
 use Qredex\Auth\ClientCredentialsAuthentication;
 use Qredex\Auth\QredexAuthentication;
+use Qredex\Auth\QredexScope;
 use Qredex\Cache\CachedToken;
 use Qredex\Cache\MemoryTokenCache;
 use Qredex\Cache\TokenCacheInterface;
@@ -64,7 +65,10 @@ final class TokenProvider
         $this->cache->clear();
     }
 
-    public function issueToken(string|array|null $scope = null): OAuthToken
+    /**
+     * @param string|QredexScope|list<string|QredexScope>|null $scope
+     */
+    public function issueToken(string|QredexScope|array|null $scope = null): OAuthToken
     {
         if (!$this->auth instanceof ClientCredentialsAuthentication) {
             throw new ConfigurationError('Explicit token issuance requires client credentials auth.', errorCode: 'sdk_configuration_error');
@@ -188,10 +192,17 @@ final class TokenProvider
         throw $lastError ?? new NetworkError('Qredex token issuance failed unexpectedly.');
     }
 
-    private function normalizeScope(string|array|null $scope): ?string
+    /**
+     * @param string|QredexScope|list<string|QredexScope>|null $scope
+     */
+    private function normalizeScope(string|QredexScope|array|null $scope): ?string
     {
         if ($scope === null) {
             return null;
+        }
+
+        if ($scope instanceof QredexScope) {
+            return $scope->value;
         }
 
         if (is_string($scope)) {
@@ -200,7 +211,10 @@ final class TokenProvider
             return $normalized === '' ? null : $normalized;
         }
 
-        $parts = array_values(array_filter(array_map(static fn (mixed $value): string => trim((string) $value), $scope), static fn (string $value): bool => $value !== ''));
+        $parts = array_values(array_filter(array_map(
+            static fn (mixed $value): string => trim($value instanceof QredexScope ? $value->value : (string) $value),
+            $scope,
+        ), static fn (string $value): bool => $value !== ''));
 
         return $parts === [] ? null : implode(' ', $parts);
     }

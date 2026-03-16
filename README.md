@@ -1,8 +1,35 @@
+<!--
+     ▄▄▄▄
+   ▄█▀▀███▄▄              █▄
+   ██    ██ ▄             ██
+   ██    ██ ████▄▄█▀█▄ ▄████ ▄█▀█▄▀██ ██▀
+   ██  ▄ ██ ██   ██▄█▀ ██ ██ ██▄█▀  ███
+    ▀█████▄▄█▀  ▄▀█▄▄▄▄█▀███▄▀█▄▄▄▄██ ██▄
+         ▀█
+
+   Copyright (C) 2026 — 2026, Qredex, LTD. All Rights Reserved.
+
+   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+
+   Licensed under the Apache License, Version 2.0. See LICENSE for the full license text.
+   You may not use this file except in compliance with that License.
+   Unless required by applicable law or agreed to in writing, software distributed under the
+   License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+   either express or implied. See the License for the specific language governing permissions
+   and limitations under the License.
+
+   If you need additional information or have any questions, please email: copyright@qredex.com
+-->
+
 # Qredex PHP SDK
 
 Canonical PHP server SDK for the Qredex Integrations API.
-`qredex` for PHP is built for backend systems that need to create creators and links, issue IITs, lock PITs, and record paid orders and refunds without dealing with raw HTTP plumbing.
 
+This package is for machine-to-machine integrations only. It is designed to make the canonical backend flow easy and safe:
+
+`create link -> issue IIT -> lock PIT -> record paid order -> record refund`
+
+It does not include Merchant API endpoints, browser/runtime logic, Shopify embedded flows, or webhook receivers.
 
 ## Installation
 
@@ -15,49 +42,79 @@ composer require qredex/php
 ```php
 <?php
 
+use Qredex\Config\QredexConfig;
 use Qredex\Qredex;
+use Qredex\Auth\QredexScope;
+use Qredex\Request\CreateLinkRequest;
+use Qredex\Request\IssueInfluenceIntentTokenRequest;
+use Qredex\Request\LockPurchaseIntentRequest;
+use Qredex\Request\RecordPaidOrderRequest;
+use Qredex\Request\RecordRefundRequest;
 
-$qredex = Qredex::bootstrap();
+$qredex = Qredex::init(QredexConfig::fromEnvironment(
+    scope: [
+        QredexScope::LINKS_WRITE,
+        QredexScope::INTENTS_WRITE,
+        QredexScope::ORDERS_WRITE,
+    ],
+));
 
-$creator = $qredex->creators()->create([
-    'handle' => 'amelia-rose',
-    'display_name' => 'Amelia Rose',
-]);
+$link = $qredex->links()->create(new CreateLinkRequest(
+    storeId: '61abc354-dd8d-4a23-be02-ece77b1b4da6',
+    creatorId: '16fca3f2-b346-4f98-8e52-0895aac61c5b',
+    linkName: 'spring-launch',
+    destinationPath: '/products/spring-launch',
+    attributionWindowDays: 30,
+));
 
-$link = $qredex->links()->create([
-    'store_id' => '61abc354-dd8d-4a23-be02-ece77b1b4da6',
-    'creator_id' => $creator->id,
-    'link_name' => 'spring-launch',
-    'destination_path' => '/products/spring-launch',
-    'attribution_window_days' => 30,
-]);
+$iit = $qredex->intents()->issueInfluenceIntentToken(new IssueInfluenceIntentTokenRequest(
+    linkId: $link->id,
+    landingPath: '/products/spring-launch',
+));
 
-$iit = $qredex->intents()->issueInfluenceIntentToken([
-    'link_id' => $link->id,
-    'landing_path' => '/products/spring-launch',
-]);
+$pit = $qredex->intents()->lockPurchaseIntent(new LockPurchaseIntentRequest(
+    token: $iit->token,
+    source: 'backend-cart',
+));
 
-$pit = $qredex->intents()->lockPurchaseIntent([
-    'token' => $iit->token,
-    'source' => 'backend-cart',
-]);
+$order = $qredex->orders()->recordPaidOrder(new RecordPaidOrderRequest(
+    storeId: $link->storeId,
+    externalOrderId: 'order-100045',
+    currency: 'USD',
+    orderNumber: '100045',
+    totalPrice: 110.00,
+    purchaseIntentToken: $pit->token,
+));
 
-$order = $qredex->orders()->recordPaidOrder([
-    'store_id' => $link->storeId,
-    'external_order_id' => 'order-100045',
-    'order_number' => '100045',
-    'currency' => 'USD',
-    'total_price' => 110.00,
-    'purchase_intent_token' => $pit->token,
-]);
+$refund = $qredex->refunds()->recordRefund(new RecordRefundRequest(
+    storeId: $link->storeId,
+    externalOrderId: 'order-100045',
+    externalRefundId: 'refund-100045-1',
+    refundTotal: 25.00,
+));
 ```
 
-## Configuration
+## Initialization
 
-Environment bootstrap:
+Preferred typed initialization:
 
 ```php
-$qredex = Qredex::bootstrap();
+<?php
+
+use Qredex\Config\QredexConfig;
+use Qredex\Qredex;
+use Qredex\Auth\QredexScope;
+
+$qredex = Qredex::init(QredexConfig::fromEnvironment(
+    scope: [
+        QredexScope::LINKS_WRITE,
+        QredexScope::INTENTS_WRITE,
+        QredexScope::ORDERS_WRITE,
+    ],
+    timeoutMs: 15_000,
+    requestIdHeader: 'x-client-request-id',
+    requestIdFactory: static fn (): string => bin2hex(random_bytes(16)),
+));
 ```
 
 Required environment variables:
@@ -72,93 +129,85 @@ Optional environment variables:
 - `QREDEX_BASE_URL`
 - `QREDEX_TIMEOUT_MS`
 
-Explicit initialization:
+Programmatic configuration should prefer `QredexScope` values over raw scope strings.
 
-```php
-<?php
-
-use Qredex\Auth\ClientCredentialsAuthentication;
-use Qredex\Config\QredexConfig;
-use Qredex\Config\QredexEnvironment;
-use Qredex\Qredex;
-
-$qredex = Qredex::init(new QredexConfig(
-    auth: new ClientCredentialsAuthentication(
-        clientId: 'qdx_client_id',
-        clientSecret: 'qdx_client_secret',
-        scope: [
-            'direct:creators:write',
-            'direct:links:write',
-            'direct:intents:write',
-            'direct:orders:write',
-        ],
-    ),
-    environment: QredexEnvironment::PRODUCTION,
-    timeoutMs: 15_000,
-));
-```
+Legacy convenience bootstrap remains available for backward compatibility, but the typed `QredexConfig::fromEnvironment()` path is the primary documented initialization flow.
 
 ## Public API
 
+Stable canonical write surface:
+
 ```php
-$qredex->auth()->issueToken();
-$qredex->creators()->create([...]);
+$qredex->creators()->create(...);
+$qredex->links()->create(...);
+$qredex->intents()->issueInfluenceIntentToken(...);
+$qredex->intents()->lockPurchaseIntent(...);
+$qredex->orders()->recordPaidOrder(...);
+$qredex->refunds()->recordRefund(...);
+```
+
+Operational read surface:
+
+```php
 $qredex->creators()->get($creatorId);
 $qredex->creators()->list([...]);
-
-$qredex->links()->create([...]);
 $qredex->links()->get($linkId);
 $qredex->links()->list([...]);
 $qredex->links()->getStats($linkId);
+$qredex->orders()->list([...]);
+$qredex->orders()->getDetails($orderAttributionId);
+```
 
-$qredex->intents()->issueInfluenceIntentToken([...]);
-$qredex->intents()->lockPurchaseIntent([...]);
+Advanced or deprecated migration surface:
+
+```php
+$qredex->auth()->issueToken();
 $qredex->intents()->get($pitToken);
 $qredex->intents()->getByTokenId($tokenId);
 $qredex->intents()->getByInfluenceIntentToken($iitToken);
 $qredex->intents()->latestUnlocked();
-
-$qredex->orders()->recordPaidOrder([...]);
-$qredex->orders()->list([...]);
-$qredex->orders()->getDetails($orderAttributionId);
-
-$qredex->refunds()->recordRefund([...]);
 ```
 
 ## Errors
 
-The SDK raises typed exceptions and preserves:
+The SDK separates local validation, API validation, and protocol/response failures:
 
-- HTTP status
-- `error_code`
-- message
-- request id
-- trace id
-- parsed response body
-
-Main types:
-
+- `Qredex\Error\RequestValidationError`
+- `Qredex\Error\ApiValidationError`
+- `Qredex\Error\ResponseDecodingError`
 - `Qredex\Error\AuthenticationError`
 - `Qredex\Error\AuthorizationError`
-- `Qredex\Error\ValidationError`
 - `Qredex\Error\ConflictError`
 - `Qredex\Error\RateLimitError`
 - `Qredex\Error\ApiError`
 - `Qredex\Error\NetworkError`
 - `Qredex\Error\ConfigurationError`
 
+## Operational Defaults
+
+- OAuth tokens are issued automatically and cached until close to expiry.
+- Writes are never retried automatically.
+- Read retries are opt-in and honor `Retry-After` when provided.
+- Client-side correlation ids can be emitted and optionally attached to outgoing headers.
+- The SDK does not log client secrets, bearer tokens, IITs, or PITs by default.
+
 ## Docs
 
 - [Integration Guide](docs/INTEGRATION_GUIDE.md)
+- [API Reference](docs/API_REFERENCE.md)
 - [Errors](docs/ERRORS.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security](SECURITY.md)
+- [Changelog](CHANGELOG.md)
 
 ## Examples
 
-- [auth-create-creator.php](examples/auth-create-creator.php)
+- [canonical-flow.php](examples/canonical-flow.php)
+- [create-creator.php](examples/create-creator.php)
 - [create-link.php](examples/create-link.php)
 - [issue-iit.php](examples/issue-iit.php)
 - [lock-pit.php](examples/lock-pit.php)
 - [record-paid-order.php](examples/record-paid-order.php)
+- [record-refund.php](examples/record-refund.php)
 - [list-orders.php](examples/list-orders.php)
 - [get-order-details.php](examples/get-order-details.php)
-- [record-refund.php](examples/record-refund.php)

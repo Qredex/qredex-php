@@ -30,14 +30,16 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 use Qredex\Auth\QredexScope;
 use Qredex\Config\QredexConfig;
 use Qredex\Qredex;
+use Qredex\Request\CreateCreatorRequest;
 
 $qredex = Qredex::init(QredexConfig::fromEnvironment(
-    scope: QredexScope::ORDERS_READ,
+    scope: QredexScope::CREATORS_WRITE,
 ));
 
-$orders = $qredex->orders()->list([
-    'page' => 0,
-    'size' => 25,
-]);
+$creator = $qredex->creators()->create(new CreateCreatorRequest(
+    handle: 'amelia-rose',
+    displayName: 'Amelia Rose',
+    email: 'ops@example.com',
+));
 
-var_dump($orders);
+var_dump($creator);
