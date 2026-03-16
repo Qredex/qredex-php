@@ -37,6 +37,7 @@ use Qredex\Http\HttpTransportInterface;
 
 final readonly class QredexConfig
 {
+    /** @param array<string, string> $defaultHeaders */
     public function __construct(
         public ClientCredentialsAuthentication $auth,
         public QredexEnvironment $environment = QredexEnvironment::PRODUCTION,
@@ -74,7 +75,7 @@ final readonly class QredexConfig
         }
 
         foreach ($this->defaultHeaders as $name => $value) {
-            if (!is_string($name) || trim($name) === '' || !is_string($value)) {
+            if (trim($name) === '') {
                 throw new ConfigurationError('Qredex defaultHeaders must be a string map.', errorCode: 'sdk_configuration_error');
             }
 

@@ -63,6 +63,9 @@ final readonly class LinkStats implements JsonSerializable
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function jsonSerialize(): array
     {
         return [

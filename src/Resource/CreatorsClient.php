@@ -27,11 +27,20 @@ declare(strict_types=1);
 
 namespace Qredex\Resource;
 
+use Qredex\Error\ApiValidationError;
+use Qredex\Error\AuthenticationError;
+use Qredex\Error\AuthorizationError;
+use Qredex\Error\ConflictError;
+use Qredex\Error\NetworkError;
+use Qredex\Error\NotFoundError;
+use Qredex\Error\RequestValidationError;
+use Qredex\Error\ResponseDecodingError;
 use Qredex\Internal\HttpClient;
 use Qredex\Internal\Validator;
 use Qredex\Model\Creator;
 use Qredex\Model\Page;
 use Qredex\Request\CreateCreatorRequest;
+use Qredex\Request\ListCreatorsFilter;
 
 final readonly class CreatorsClient
 {
@@ -41,17 +50,36 @@ final readonly class CreatorsClient
 
     /**
      * @param array<string, mixed>|CreateCreatorRequest $payload
+     *
+     * @throws RequestValidationError
+     * @throws AuthenticationError
+     * @throws AuthorizationError
+     * @throws ApiValidationError
+     * @throws ConflictError
+     * @throws NetworkError
+     * @throws ResponseDecodingError
      */
     public function create(array|CreateCreatorRequest $payload): Creator
     {
-        $payload = $payload instanceof CreateCreatorRequest ? $payload->toArray() : $payload;
-        Validator::createCreator($payload);
+        if ($payload instanceof CreateCreatorRequest) {
+            $payload = $payload->toArray();
+        } else {
+            Validator::createCreator($payload);
+        }
 
         return Creator::fromArray(
             $this->http->json('POST', '/api/v1/integrations/creators', body: $payload),
         );
     }
 
+    /**
+     * @throws RequestValidationError
+     * @throws AuthenticationError
+     * @throws AuthorizationError
+     * @throws NotFoundError
+     * @throws NetworkError
+     * @throws ResponseDecodingError
+     */
     public function get(string $creatorId): Creator
     {
         Validator::uuid($creatorId, 'creatorId');
@@ -62,12 +90,22 @@ final readonly class CreatorsClient
     }
 
     /**
-     * @param array<string, mixed> $filters
+     * @param array<string, mixed>|ListCreatorsFilter $filters
      * @return Page<Creator>
+     *
+     * @throws RequestValidationError
+     * @throws AuthenticationError
+     * @throws AuthorizationError
+     * @throws NetworkError
+     * @throws ResponseDecodingError
      */
-    public function list(array $filters = []): Page
+    public function list(array|ListCreatorsFilter $filters = []): Page
     {
-        Validator::listCreators($filters);
+        if ($filters instanceof ListCreatorsFilter) {
+            $filters = $filters->toArray();
+        } else {
+            Validator::listCreators($filters);
+        }
 
         return Page::fromArray(
             $this->http->json('GET', '/api/v1/integrations/creators', query: $filters),

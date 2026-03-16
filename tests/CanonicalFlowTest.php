@@ -237,7 +237,9 @@ final class CanonicalFlowTest extends TestCase
         self::assertSame('pit-token', $pit->token);
         self::assertSame('ATTRIBUTED', $order->resolutionStatus);
         self::assertSame('PARTIALLY_REFUNDED', $refund->resolutionStatus);
-        self::assertSame('direct:links:write direct:intents:write direct:orders:write', $transport->requests[0]->body['scope']);
+        $authBody = $transport->requests[0]->body;
+        self::assertIsArray($authBody);
+        self::assertSame('direct:links:write direct:intents:write direct:orders:write', $authBody['scope']);
 
         self::assertSame([
             'store_id' => '61abc354-dd8d-4a23-be02-ece77b1b4da6',

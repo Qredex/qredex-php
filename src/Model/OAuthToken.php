@@ -30,6 +30,9 @@ namespace Qredex\Model;
 use JsonSerializable;
 use Qredex\Internal\ArrayMapper;
 
+/**
+ * @internal This class is not part of the public SDK surface.
+ */
 final readonly class OAuthToken implements JsonSerializable
 {
     public function __construct(
@@ -53,6 +56,9 @@ final readonly class OAuthToken implements JsonSerializable
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function jsonSerialize(): array
     {
         return [

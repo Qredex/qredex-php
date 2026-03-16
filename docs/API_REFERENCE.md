@@ -42,6 +42,14 @@ These request classes are the preferred public input surface:
 
 Each canonical write method still accepts legacy arrays for backward compatibility.
 
+## Typed List Filters
+
+- `Qredex\Request\ListCreatorsFilter`
+- `Qredex\Request\ListLinksFilter`
+- `Qredex\Request\ListOrdersFilter`
+
+List methods accept both typed filters and legacy arrays.
+
 ## Scopes
 
 - `Qredex\Auth\QredexScope`
@@ -54,13 +62,13 @@ Programmatic configuration should prefer enum values or enum arrays over raw sco
 
 - `creators()->create(array|CreateCreatorRequest): Creator`
 - `creators()->get(string $creatorId): Creator`
-- `creators()->list(array $filters = []): Page<Creator>`
+- `creators()->list(array|ListCreatorsFilter $filters = []): Page<Creator>`
 
 ### Links
 
 - `links()->create(array|CreateLinkRequest): Link`
 - `links()->get(string $linkId): Link`
-- `links()->list(array $filters = []): Page<Link>`
+- `links()->list(array|ListLinksFilter $filters = []): Page<Link>`
 - `links()->getStats(string $linkId): LinkStats`
 
 ### Intents
@@ -71,7 +79,7 @@ Programmatic configuration should prefer enum values or enum arrays over raw sco
 ### Orders
 
 - `orders()->recordPaidOrder(array|RecordPaidOrderRequest): OrderAttribution`
-- `orders()->list(array $filters = []): Page<OrderAttribution>`
+- `orders()->list(array|ListOrdersFilter $filters = []): Page<OrderAttribution>`
 - `orders()->getDetails(string $orderAttributionId): OrderAttribution`
 
 ### Refunds

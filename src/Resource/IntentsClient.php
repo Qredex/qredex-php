@@ -27,6 +27,13 @@ declare(strict_types=1);
 
 namespace Qredex\Resource;
 
+use Qredex\Error\ApiValidationError;
+use Qredex\Error\AuthenticationError;
+use Qredex\Error\AuthorizationError;
+use Qredex\Error\ConflictError;
+use Qredex\Error\NetworkError;
+use Qredex\Error\RequestValidationError;
+use Qredex\Error\ResponseDecodingError;
 use Qredex\Internal\HttpClient;
 use Qredex\Internal\Validator;
 use Qredex\Model\InfluenceIntent;
@@ -42,11 +49,22 @@ final readonly class IntentsClient
 
     /**
      * @param array<string, mixed>|IssueInfluenceIntentTokenRequest $payload
+     *
+     * @throws RequestValidationError
+     * @throws AuthenticationError
+     * @throws AuthorizationError
+     * @throws ApiValidationError
+     * @throws ConflictError
+     * @throws NetworkError
+     * @throws ResponseDecodingError
      */
     public function issueInfluenceIntentToken(array|IssueInfluenceIntentTokenRequest $payload): InfluenceIntent
     {
-        $payload = $payload instanceof IssueInfluenceIntentTokenRequest ? $payload->toArray() : $payload;
-        Validator::issueInfluenceIntentToken($payload);
+        if ($payload instanceof IssueInfluenceIntentTokenRequest) {
+            $payload = $payload->toArray();
+        } else {
+            Validator::issueInfluenceIntentToken($payload);
+        }
 
         return InfluenceIntent::fromArray(
             $this->http->json('POST', '/api/v1/integrations/intents/token', body: $payload),
@@ -55,11 +73,22 @@ final readonly class IntentsClient
 
     /**
      * @param array<string, mixed>|LockPurchaseIntentRequest $payload
+     *
+     * @throws RequestValidationError
+     * @throws AuthenticationError
+     * @throws AuthorizationError
+     * @throws ApiValidationError
+     * @throws ConflictError
+     * @throws NetworkError
+     * @throws ResponseDecodingError
      */
     public function lockPurchaseIntent(array|LockPurchaseIntentRequest $payload): PurchaseIntent
     {
-        $payload = $payload instanceof LockPurchaseIntentRequest ? $payload->toArray() : $payload;
-        Validator::lockPurchaseIntent($payload);
+        if ($payload instanceof LockPurchaseIntentRequest) {
+            $payload = $payload->toArray();
+        } else {
+            Validator::lockPurchaseIntent($payload);
+        }
 
         return PurchaseIntent::fromArray(
             $this->http->json('POST', '/api/v1/integrations/intents/lock', body: $payload),

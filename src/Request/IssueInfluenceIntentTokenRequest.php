@@ -63,6 +63,9 @@ final readonly class IssueInfluenceIntentTokenRequest implements JsonSerializabl
         return $payload;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function jsonSerialize(): array
     {
         return $this->toArray();

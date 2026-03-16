@@ -49,6 +49,9 @@ final readonly class OrderAttributionTimelineEvent implements JsonSerializable
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function jsonSerialize(): array
     {
         return [

@@ -19,7 +19,7 @@
 #
 #  If you need additional information or have any questions, please email: copyright@qredex.com
 parameters:
-  level: 5
+  level: 8
   paths:
     - src
     - tests

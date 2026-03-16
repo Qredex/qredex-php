@@ -29,13 +29,13 @@ namespace Qredex\Internal;
 
 use Psr\Log\LoggerInterface;
 use Qredex\Auth\ClientCredentialsAuthentication;
-use Qredex\Auth\QredexScope;
 use Qredex\Cache\CachedToken;
 use Qredex\Cache\MemoryTokenCache;
 use Qredex\Cache\TokenCacheInterface;
 use Qredex\Config\RetryPolicy;
 use Qredex\Error\NetworkError;
 use Qredex\Error\QredexError;
+use Qredex\Http\BodyType;
 use Qredex\Http\HttpTransportInterface;
 use Qredex\Http\TransportRequest;
 use Qredex\Model\OAuthToken;
@@ -105,7 +105,7 @@ final class TokenProvider
                         'authorization' => 'Basic ' . base64_encode($this->auth->clientId . ':' . $this->auth->clientSecret),
                     ],
                     body: $body,
-                    bodyType: TransportRequest::BODY_FORM,
+                    bodyType: BodyType::FORM,
                     timeoutMs: $this->timeoutMs,
                 ));
 
@@ -163,33 +163,6 @@ final class TokenProvider
         }
 
         throw $lastError ?? new NetworkError('Qredex token issuance failed unexpectedly.');
-    }
-
-    /**
-     * @param string|QredexScope|list<string|QredexScope>|null $scope
-     */
-    public static function normalizeScope(string|QredexScope|array|null $scope): ?string
-    {
-        if ($scope === null) {
-            return null;
-        }
-
-        if ($scope instanceof QredexScope) {
-            return $scope->value;
-        }
-
-        if (is_string($scope)) {
-            $normalized = preg_replace('/[\s,]+/', ' ', trim($scope));
-
-            return $normalized === '' ? null : $normalized;
-        }
-
-        $parts = array_values(array_filter(array_map(
-            static fn (mixed $value): string => trim($value instanceof QredexScope ? $value->value : (string) $value),
-            $scope,
-        ), static fn (string $value): bool => $value !== ''));
-
-        return $parts === [] ? null : implode(' ', $parts);
     }
 
     private function shouldRetry(QredexError $error): bool

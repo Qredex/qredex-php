@@ -29,6 +29,7 @@ namespace Qredex;
 
 use Qredex\Cache\MemoryTokenCache;
 use Qredex\Config\QredexConfig;
+use Qredex\Error\ConfigurationError;
 use Qredex\Http\GuzzleTransport;
 use Qredex\Http\HttpTransportInterface;
 use Qredex\Internal\EventEmitter;
@@ -42,6 +43,8 @@ use Qredex\Resource\RefundsClient;
 
 final readonly class Qredex
 {
+    public const SDK_VERSION = '0.1.0';
+
     private CreatorsClient $creators;
     private LinksClient $links;
     private IntentsClient $intents;
@@ -80,6 +83,9 @@ final readonly class Qredex
         $this->refunds = new RefundsClient($http);
     }
 
+    /**
+     * @throws ConfigurationError
+     */
     public static function init(QredexConfig $config): self
     {
         return new self($config);
@@ -87,27 +93,12 @@ final readonly class Qredex
 
     /**
      * @param array<string, string|null>|null $env
-     * @param array<string, mixed> $overrides
+     *
+     * @throws ConfigurationError
      */
-    public static function bootstrap(?array $env = null, array $overrides = []): self
+    public static function bootstrap(?array $env = null): self
     {
-        return self::init(QredexConfig::fromEnvironment(
-            env: $env,
-            scope: $overrides['scope'] ?? null,
-            environment: $overrides['environment'] ?? null,
-            baseUrl: isset($overrides['baseUrl']) ? (string) $overrides['baseUrl'] : null,
-            timeoutMs: self::legacyTimeoutOverride($overrides['timeoutMs'] ?? null),
-            transport: $overrides['transport'] ?? null,
-            tokenCache: $overrides['tokenCache'] ?? null,
-            authRetry: $overrides['authRetry'] ?? null,
-            readRetry: $overrides['readRetry'] ?? null,
-            logger: $overrides['logger'] ?? null,
-            eventListener: is_callable($overrides['eventListener'] ?? null) ? $overrides['eventListener'] : null,
-            defaultHeaders: is_array($overrides['defaultHeaders'] ?? null) ? $overrides['defaultHeaders'] : [],
-            userAgentSuffix: isset($overrides['userAgentSuffix']) ? (string) $overrides['userAgentSuffix'] : '',
-            requestIdFactory: is_callable($overrides['requestIdFactory'] ?? null) ? $overrides['requestIdFactory'] : null,
-            requestIdHeader: isset($overrides['requestIdHeader']) ? (string) $overrides['requestIdHeader'] : null,
-        ));
+        return self::init(QredexConfig::fromEnvironment(env: $env));
     }
 
     public function creators(): CreatorsClient
@@ -153,31 +144,6 @@ final readonly class Qredex
 
     private function sdkVersion(): string
     {
-        try {
-            if (class_exists(\Composer\InstalledVersions::class)) {
-                $version = \Composer\InstalledVersions::getPrettyVersion('qredex/php');
-
-                if (is_string($version) && trim($version) !== '') {
-                    return $version;
-                }
-            }
-        } catch (\Throwable) {
-            return 'unknown';
-        }
-
-        return 'unknown';
-    }
-
-    private static function legacyTimeoutOverride(mixed $timeoutMs): ?int
-    {
-        if (is_int($timeoutMs)) {
-            return $timeoutMs;
-        }
-
-        if (is_string($timeoutMs) && ctype_digit($timeoutMs)) {
-            return (int) $timeoutMs;
-        }
-
-        return null;
+        return self::SDK_VERSION;
     }
 }

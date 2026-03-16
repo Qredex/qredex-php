@@ -213,15 +213,19 @@ If a solution feels hacky, overly magical, or hard to explain to users of the SD
 
 ## Package / Layer Rules
 
-- `src/Qredex.php` or equivalent main entrypoint → only top-level SDK composition
-- `src/Resources/*` → resource-specific operations (`Creators`, `Links`, `Intents`, `Orders`, `Refunds`)
-- `src/Auth/*` → token issuance, caching, auth configuration, auth concerns only
-- `src/Transport/*` → HTTP transport, serialization, retries, headers, low-level request execution
-- `src/Errors/*` → typed exception hierarchy and error parsing
-- `src/Types/*` or `src/ValueObjects/*` → DTOs/value objects/enums
-- `examples/` → canonical usage only
+- `src/Qredex.php` → top-level SDK composition and entrypoint (`Qredex::init()`, `Qredex::bootstrap()`)
+- `src/Resource/*` → resource-specific operation clients (`CreatorsClient`, `LinksClient`, `IntentsClient`, `OrdersClient`, `RefundsClient`)
+- `src/Auth/*` → auth configuration and scope (`ClientCredentialsAuthentication`, `QredexScope`)
+- `src/Cache/*` → token caching (`TokenCacheInterface`, `MemoryTokenCache`, `CachedToken`)
+- `src/Config/*` → SDK configuration (`QredexConfig`, `QredexEnvironment`, `RetryPolicy`)
+- `src/Http/*` → HTTP transport abstraction (`HttpTransportInterface`, `GuzzleTransport`, `TransportRequest`, `TransportResponse`, `BodyType`)
+- `src/Internal/*` → private plumbing not part of the public API (`HttpClient`, `TokenProvider`, `ErrorFactory`, `EventEmitter`, `Retry`, `Validator`, `ArrayMapper`)
+- `src/Error/*` → typed exception hierarchy (`QredexError` base, plus `ApiError`, `ApiValidationError`, `AuthenticationError`, `AuthorizationError`, `ConflictError`, `NotFoundError`, `RateLimitError`, `NetworkError`, `ConfigurationError`, `RequestValidationError`, `ResponseDecodingError`, `ValidationError`)
+- `src/Model/*` → immutable response models/value objects (`Creator`, `Link`, `LinkStats`, `InfluenceIntent`, `PurchaseIntent`, `OrderAttribution`, `OrderAttributionScoreBreakdown`, `OrderAttributionTimelineEvent`, `OAuthToken`, `Page`, `Timing`)
+- `src/Request/*` → typed request input objects (`CreateCreatorRequest`, `CreateLinkRequest`, `IssueInfluenceIntentTokenRequest`, `LockPurchaseIntentRequest`, `RecordPaidOrderRequest`, `RecordRefundRequest`, `ListCreatorsFilter`, `ListLinksFilter`, `ListOrdersFilter`)
+- `examples/` → canonical usage only (one file per operation, plus `canonical-flow.php` for end-to-end)
 - `tests/` → unit, contract, and optional live integration tests
-- `docs/` → package-specific docs, not alternate platform truth
+- `docs/` → package-specific docs (`API_REFERENCE.md`, `ERRORS.md`, `INTEGRATION_GUIDE.md`, `RELEASING.md`), not alternate platform truth
 
 ## Naming Rules
 
@@ -274,6 +278,27 @@ If a solution feels hacky, overly magical, or hard to explain to users of the SD
 
 ## PHP Implementation Guidelines
 
+### Project environment
+
+- **PHP:** `^8.2` (strict minimum)
+- **Dependencies:** `guzzlehttp/guzzle ^7.9`, `psr/log ^3.0`
+- **Dev dependencies:** `phpstan/phpstan ^2.1`, `phpunit/phpunit ^11.5`
+- **Static analysis:** PHPStan level 8 (`phpstan.neon.dist`)
+- **Autoload:** PSR-4 — `Qredex\` → `src/`, `Qredex\Tests\` → `tests/`
+- **All source files use** `declare(strict_types=1);`
+- **All classes use** `final readonly` where possible (see `Qredex.php`, `QredexConfig`, resource clients, models)
+
+### Canonical validation commands
+
+```bash
+composer test       # PHPUnit (excludes live tests by default)
+composer analyse    # PHPStan level 8
+composer check      # runs both test + analyse
+composer test:live  # opt-in live integration tests (requires env credentials)
+```
+
+Always run `composer check` before closing work. Report the result.
+
 ### Core language expectations
 
 - Use modern PHP style and typing.
@@ -325,8 +350,28 @@ At minimum cover:
 
 - Fixes require regression tests.
 - Do not depend on external environments unless explicitly configured.
-- If the repo supports static analysis or linting, run it as part of validation.
+- Run `composer check` (tests + PHPStan) as part of validation.
 - Report exactly which validation commands were run and whether they passed.
+
+### Test patterns in this repo
+
+- **`FakeTransport`** (`tests/FakeTransport.php`) is the canonical test double. It implements `HttpTransportInterface`, accepts queued `TransportResponse` or `\Throwable` via `push()`, and records sent `TransportRequest` objects on `$requests`. Always use this instead of mocking Guzzle directly.
+- **`QredexTest`** — core SDK behavior: init, bootstrap, resource CRUD, error mapping.
+- **`CanonicalFlowTest`** — end-to-end IIT → PIT → paid order → refund flow with `FakeTransport`.
+- **`TransportAndErrorTest`** — transport-layer behavior: retries, error parsing, network failures.
+- **`LiveIntegrationTest`** — real API calls; PHPUnit group `live`, excluded by default. Requires `QREDEX_CLIENT_ID` / `QREDEX_CLIENT_SECRET` env vars.
+- To instantiate the SDK in tests, use `QredexConfig::fromEnvironment()` with a `transport:` override to inject `FakeTransport`. Push an OAuth token response first, then the resource response:
+
+  ```php
+  $transport = new FakeTransport();
+  $transport->push(new TransportResponse(200, [], json_encode([...])));  // token
+  $transport->push(new TransportResponse(201, [], json_encode([...])));  // resource
+  $sdk = Qredex::init(QredexConfig::fromEnvironment(
+      env: ['QREDEX_CLIENT_ID' => 'id', 'QREDEX_CLIENT_SECRET' => 'secret'],
+      scope: QredexScope::CREATORS_WRITE,
+      transport: $transport,
+  ));
+  ```
 
 ## Documentation Rules
 

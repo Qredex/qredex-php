@@ -40,6 +40,8 @@ Qredex PHP SDK normalizes failures into a small typed hierarchy with clearer bou
   Raised for API `401` responses.
 - `Qredex\Error\AuthorizationError`
   Raised for API `403` responses.
+- `Qredex\Error\NotFoundError`
+  Raised for API `404` responses.
 - `Qredex\Error\ConflictError`
   Raised for API `409` responses.
 - `Qredex\Error\RateLimitError`

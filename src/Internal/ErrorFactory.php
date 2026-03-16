@@ -32,6 +32,7 @@ use Qredex\Error\ApiValidationError;
 use Qredex\Error\AuthenticationError;
 use Qredex\Error\AuthorizationError;
 use Qredex\Error\ConflictError;
+use Qredex\Error\NotFoundError;
 use Qredex\Error\QredexError;
 use Qredex\Error\RateLimitError;
 use Qredex\Http\TransportResponse;
@@ -75,6 +76,16 @@ final class ErrorFactory
                 retryAfterSeconds: $retryAfterSeconds,
             ),
             403 => new AuthorizationError(
+                message: $message,
+                status: $response->status,
+                errorCode: $errorCode,
+                requestId: $requestId,
+                traceId: $traceId,
+                responseBody: $payload,
+                responseText: $response->body,
+                retryAfterSeconds: $retryAfterSeconds,
+            ),
+            404 => new NotFoundError(
                 message: $message,
                 status: $response->status,
                 errorCode: $errorCode,

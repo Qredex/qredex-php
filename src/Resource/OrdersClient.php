@@ -27,10 +27,19 @@ declare(strict_types=1);
 
 namespace Qredex\Resource;
 
+use Qredex\Error\ApiValidationError;
+use Qredex\Error\AuthenticationError;
+use Qredex\Error\AuthorizationError;
+use Qredex\Error\ConflictError;
+use Qredex\Error\NetworkError;
+use Qredex\Error\NotFoundError;
+use Qredex\Error\RequestValidationError;
+use Qredex\Error\ResponseDecodingError;
 use Qredex\Internal\HttpClient;
 use Qredex\Internal\Validator;
 use Qredex\Model\OrderAttribution;
 use Qredex\Model\Page;
+use Qredex\Request\ListOrdersFilter;
 use Qredex\Request\RecordPaidOrderRequest;
 
 final readonly class OrdersClient
@@ -41,11 +50,22 @@ final readonly class OrdersClient
 
     /**
      * @param array<string, mixed>|RecordPaidOrderRequest $payload
+     *
+     * @throws RequestValidationError
+     * @throws AuthenticationError
+     * @throws AuthorizationError
+     * @throws ApiValidationError
+     * @throws ConflictError
+     * @throws NetworkError
+     * @throws ResponseDecodingError
      */
     public function recordPaidOrder(array|RecordPaidOrderRequest $payload): OrderAttribution
     {
-        $payload = $payload instanceof RecordPaidOrderRequest ? $payload->toArray() : $payload;
-        Validator::recordPaidOrder($payload);
+        if ($payload instanceof RecordPaidOrderRequest) {
+            $payload = $payload->toArray();
+        } else {
+            Validator::recordPaidOrder($payload);
+        }
 
         return OrderAttribution::fromArray(
             $this->http->json('POST', '/api/v1/integrations/orders/paid', body: $payload),
@@ -53,12 +73,22 @@ final readonly class OrdersClient
     }
 
     /**
-     * @param array<string, mixed> $filters
+     * @param array<string, mixed>|ListOrdersFilter $filters
      * @return Page<OrderAttribution>
+     *
+     * @throws RequestValidationError
+     * @throws AuthenticationError
+     * @throws AuthorizationError
+     * @throws NetworkError
+     * @throws ResponseDecodingError
      */
-    public function list(array $filters = []): Page
+    public function list(array|ListOrdersFilter $filters = []): Page
     {
-        Validator::listOrders($filters);
+        if ($filters instanceof ListOrdersFilter) {
+            $filters = $filters->toArray();
+        } else {
+            Validator::listOrders($filters);
+        }
 
         return Page::fromArray(
             $this->http->json('GET', '/api/v1/integrations/orders', query: $filters),
@@ -66,6 +96,14 @@ final readonly class OrdersClient
         );
     }
 
+    /**
+     * @throws RequestValidationError
+     * @throws AuthenticationError
+     * @throws AuthorizationError
+     * @throws NotFoundError
+     * @throws NetworkError
+     * @throws ResponseDecodingError
+     */
     public function getDetails(string $orderAttributionId): OrderAttribution
     {
         Validator::uuid($orderAttributionId, 'orderAttributionId');

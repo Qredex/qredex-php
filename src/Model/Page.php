@@ -32,8 +32,9 @@ use Qredex\Internal\ArrayMapper;
 
 /**
  * @template T
+ * @implements \IteratorAggregate<int, T>
  */
-final readonly class Page implements JsonSerializable
+final readonly class Page implements JsonSerializable, \Countable, \IteratorAggregate
 {
     /**
      * @param array<int, T> $items
@@ -73,6 +74,9 @@ final readonly class Page implements JsonSerializable
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function jsonSerialize(): array
     {
         return [
@@ -82,5 +86,18 @@ final readonly class Page implements JsonSerializable
             'total_elements' => $this->totalElements,
             'total_pages' => $this->totalPages,
         ];
+    }
+
+    public function count(): int
+    {
+        return count($this->items);
+    }
+
+    /**
+     * @return \ArrayIterator<int, T>
+     */
+    public function getIterator(): \ArrayIterator
+    {
+        return new \ArrayIterator($this->items);
     }
 }

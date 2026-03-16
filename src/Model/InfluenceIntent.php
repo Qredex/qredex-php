@@ -75,6 +75,9 @@ final readonly class InfluenceIntent implements JsonSerializable
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function jsonSerialize(): array
     {
         return [

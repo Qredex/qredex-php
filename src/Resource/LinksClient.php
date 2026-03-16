@@ -27,12 +27,21 @@ declare(strict_types=1);
 
 namespace Qredex\Resource;
 
+use Qredex\Error\ApiValidationError;
+use Qredex\Error\AuthenticationError;
+use Qredex\Error\AuthorizationError;
+use Qredex\Error\ConflictError;
+use Qredex\Error\NetworkError;
+use Qredex\Error\NotFoundError;
+use Qredex\Error\RequestValidationError;
+use Qredex\Error\ResponseDecodingError;
 use Qredex\Internal\HttpClient;
 use Qredex\Internal\Validator;
 use Qredex\Model\Link;
 use Qredex\Model\LinkStats;
 use Qredex\Model\Page;
 use Qredex\Request\CreateLinkRequest;
+use Qredex\Request\ListLinksFilter;
 
 final readonly class LinksClient
 {
@@ -42,17 +51,36 @@ final readonly class LinksClient
 
     /**
      * @param array<string, mixed>|CreateLinkRequest $payload
+     *
+     * @throws RequestValidationError
+     * @throws AuthenticationError
+     * @throws AuthorizationError
+     * @throws ApiValidationError
+     * @throws ConflictError
+     * @throws NetworkError
+     * @throws ResponseDecodingError
      */
     public function create(array|CreateLinkRequest $payload): Link
     {
-        $payload = $payload instanceof CreateLinkRequest ? $payload->toArray() : $payload;
-        Validator::createLink($payload);
+        if ($payload instanceof CreateLinkRequest) {
+            $payload = $payload->toArray();
+        } else {
+            Validator::createLink($payload);
+        }
 
         return Link::fromArray(
             $this->http->json('POST', '/api/v1/integrations/links', body: $payload),
         );
     }
 
+    /**
+     * @throws RequestValidationError
+     * @throws AuthenticationError
+     * @throws AuthorizationError
+     * @throws NotFoundError
+     * @throws NetworkError
+     * @throws ResponseDecodingError
+     */
     public function get(string $linkId): Link
     {
         Validator::uuid($linkId, 'linkId');
@@ -63,12 +91,22 @@ final readonly class LinksClient
     }
 
     /**
-     * @param array<string, mixed> $filters
+     * @param array<string, mixed>|ListLinksFilter $filters
      * @return Page<Link>
+     *
+     * @throws RequestValidationError
+     * @throws AuthenticationError
+     * @throws AuthorizationError
+     * @throws NetworkError
+     * @throws ResponseDecodingError
      */
-    public function list(array $filters = []): Page
+    public function list(array|ListLinksFilter $filters = []): Page
     {
-        Validator::listLinks($filters);
+        if ($filters instanceof ListLinksFilter) {
+            $filters = $filters->toArray();
+        } else {
+            Validator::listLinks($filters);
+        }
 
         return Page::fromArray(
             $this->http->json('GET', '/api/v1/integrations/links', query: $filters),
@@ -76,6 +114,14 @@ final readonly class LinksClient
         );
     }
 
+    /**
+     * @throws RequestValidationError
+     * @throws AuthenticationError
+     * @throws AuthorizationError
+     * @throws NotFoundError
+     * @throws NetworkError
+     * @throws ResponseDecodingError
+     */
     public function getStats(string $linkId): LinkStats
     {
         Validator::uuid($linkId, 'linkId');

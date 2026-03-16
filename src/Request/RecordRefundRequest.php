@@ -59,6 +59,9 @@ final readonly class RecordRefundRequest implements JsonSerializable
         return $payload;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function jsonSerialize(): array
     {
         return $this->toArray();

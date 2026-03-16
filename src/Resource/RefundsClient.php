@@ -27,6 +27,13 @@ declare(strict_types=1);
 
 namespace Qredex\Resource;
 
+use Qredex\Error\ApiValidationError;
+use Qredex\Error\AuthenticationError;
+use Qredex\Error\AuthorizationError;
+use Qredex\Error\ConflictError;
+use Qredex\Error\NetworkError;
+use Qredex\Error\RequestValidationError;
+use Qredex\Error\ResponseDecodingError;
 use Qredex\Internal\HttpClient;
 use Qredex\Internal\Validator;
 use Qredex\Model\OrderAttribution;
@@ -40,11 +47,22 @@ final readonly class RefundsClient
 
     /**
      * @param array<string, mixed>|RecordRefundRequest $payload
+     *
+     * @throws RequestValidationError
+     * @throws AuthenticationError
+     * @throws AuthorizationError
+     * @throws ApiValidationError
+     * @throws ConflictError
+     * @throws NetworkError
+     * @throws ResponseDecodingError
      */
     public function recordRefund(array|RecordRefundRequest $payload): OrderAttribution
     {
-        $payload = $payload instanceof RecordRefundRequest ? $payload->toArray() : $payload;
-        Validator::recordRefund($payload);
+        if ($payload instanceof RecordRefundRequest) {
+            $payload = $payload->toArray();
+        } else {
+            Validator::recordRefund($payload);
+        }
 
         return OrderAttribution::fromArray(
             $this->http->json('POST', '/api/v1/integrations/orders/refund', body: $payload),

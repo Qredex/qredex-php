@@ -54,9 +54,9 @@ final class GuzzleTransport implements HttpTransportInterface
             'timeout' => $request->timeoutMs / 1000,
         ];
 
-        if ($request->bodyType === TransportRequest::BODY_JSON && is_array($request->body)) {
+        if ($request->bodyType === BodyType::JSON && is_array($request->body)) {
             $options['json'] = $request->body;
-        } elseif ($request->bodyType === TransportRequest::BODY_FORM && is_array($request->body)) {
+        } elseif ($request->bodyType === BodyType::FORM && is_array($request->body)) {
             $options['form_params'] = $request->body;
         } elseif (is_string($request->body)) {
             $options['body'] = $request->body;

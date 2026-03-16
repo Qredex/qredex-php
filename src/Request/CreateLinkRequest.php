@@ -67,6 +67,9 @@ final readonly class CreateLinkRequest implements JsonSerializable
         return $payload;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function jsonSerialize(): array
     {
         return $this->toArray();

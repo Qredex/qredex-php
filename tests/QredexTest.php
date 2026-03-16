@@ -40,7 +40,7 @@ use Qredex\Request\CreateCreatorRequest;
 
 final class QredexTest extends TestCase
 {
-    public function testLegacyBootstrapAndArrayPayloadStillWork(): void
+    public function testBootstrapAndArrayPayloadStillWork(): void
     {
         $transport = new FakeTransport();
         $transport->push(new TransportResponse(200, [], json_encode([
@@ -60,13 +60,14 @@ final class QredexTest extends TestCase
             'updated_at' => '2026-03-15T09:00:00Z',
         ], JSON_THROW_ON_ERROR)));
 
-        $sdk = Qredex::bootstrap([
-            'QREDEX_CLIENT_ID' => 'client-id',
-            'QREDEX_CLIENT_SECRET' => 'client-secret',
-        ], [
-            'scope' => QredexScope::CREATORS_WRITE,
-            'transport' => $transport,
-        ]);
+        $sdk = Qredex::init(QredexConfig::fromEnvironment(
+            env: [
+                'QREDEX_CLIENT_ID' => 'client-id',
+                'QREDEX_CLIENT_SECRET' => 'client-secret',
+            ],
+            scope: QredexScope::CREATORS_WRITE,
+            transport: $transport,
+        ));
 
         $creator = $sdk->creators()->create([
             'handle' => 'amelia-rose',

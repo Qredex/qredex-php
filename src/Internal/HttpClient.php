@@ -34,6 +34,7 @@ use Qredex\Error\NetworkError;
 use Qredex\Error\QredexError;
 use Qredex\Error\ResponseDecodingError;
 use Qredex\Http\HttpTransportInterface;
+use Qredex\Http\BodyType;
 use Qredex\Http\TransportRequest;
 use Qredex\Http\TransportResponse;
 
@@ -58,6 +59,7 @@ final class HttpClient
     /**
      * @param array<string, scalar|null> $query
      * @param array<string, mixed>|null $body
+     * @return array<string, mixed>
      */
     public function json(string $method, string $path, array $query = [], ?array $body = null): array
     {
@@ -134,7 +136,7 @@ final class HttpClient
             headers: $headers,
             query: $query,
             body: $body,
-            bodyType: $body === null ? TransportRequest::BODY_NONE : TransportRequest::BODY_JSON,
+            bodyType: $body === null ? BodyType::NONE : BodyType::JSON,
             timeoutMs: $this->timeoutMs,
         ));
 

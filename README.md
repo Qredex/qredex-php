@@ -23,6 +23,10 @@
 
 # Qredex PHP SDK
 
+[![CI](https://github.com/Qredex/qredex-php/actions/workflows/ci.yml/badge.svg)](https://github.com/Qredex/qredex-php/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![PHP](https://img.shields.io/badge/php-%5E8.2-8892BF.svg)](https://www.php.net/)
+
 Canonical PHP server SDK for the Qredex Integrations API.
 
 This package is for machine-to-machine integrations only. It is designed to make the canonical backend flow easy and safe:
@@ -137,7 +141,7 @@ Optional environment variables:
 
 Programmatic configuration should prefer `QredexScope` values over raw scope strings.
 
-`Qredex::bootstrap()` remains available as the convenience path for environment-based initialization, while `QredexConfig::fromEnvironment()` is the most explicit typed option.
+`Qredex::bootstrap()` remains available as the convenience path for environment-only initialization, while `QredexConfig::fromEnvironment()` is the recommended typed option for any customization.
 
 ## Stability
 
@@ -179,6 +183,7 @@ The SDK separates local validation, API validation, and protocol/response failur
 - `Qredex\Error\ResponseDecodingError`
 - `Qredex\Error\AuthenticationError`
 - `Qredex\Error\AuthorizationError`
+- `Qredex\Error\NotFoundError`
 - `Qredex\Error\ConflictError`
 - `Qredex\Error\RateLimitError`
 - `Qredex\Error\ApiError`
