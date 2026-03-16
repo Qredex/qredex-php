@@ -114,11 +114,13 @@ jobs:
           gh release create "${{ steps.release.outputs.tag }}" --generate-notes
 
       - name: Notify Packagist
-        if: steps.release.outputs.should_publish == 'true' && secrets.PACKAGIST_WEBHOOK_URL != ''
+        if: steps.release.outputs.should_publish == 'true'
         env:
           PACKAGIST_WEBHOOK_URL: ${{ secrets.PACKAGIST_WEBHOOK_URL }}
-        run: curl --fail --silent --show-error -X POST "$PACKAGIST_WEBHOOK_URL"
-
-      - name: Skip Packagist notification
-        if: steps.release.outputs.should_publish == 'true' && secrets.PACKAGIST_WEBHOOK_URL == ''
-        run: echo "PACKAGIST_WEBHOOK_URL is not configured. GitHub release was created, but no Packagist webhook was triggered."
+        run: |
+          if [[ -n "${PACKAGIST_WEBHOOK_URL}" ]]; then
+            curl --fail --silent --show-error -X POST "$PACKAGIST_WEBHOOK_URL"
+            echo "Packagist notified."
+          else
+            echo "PACKAGIST_WEBHOOK_URL is not configured. Skipping Packagist notification."
+          fi
