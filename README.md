@@ -237,3 +237,9 @@ Start from [`.env.live.example`](.env.live.example) when wiring live test creden
 ## Release Notes
 
 - [Releasing](docs/RELEASING.md)
+
+## Qredex Contact
+
+- Website: https://qredex.com
+- X: https://x.com/qredex
+- Email: os@qredex.com

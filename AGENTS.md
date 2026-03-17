@@ -394,6 +394,33 @@ Docs must explain:
 Examples are part of the SDK contract.
 They must reflect real canonical usage, not shortcuts or fake flows.
 
+### README contact section
+
+The bottom of `README.md` must contain a `Qredex Contact` section with exactly:
+
+- Website: `https://qredex.com`
+- X: `https://x.com/qredex`
+- Email: `os@qredex.com`
+
+Do not omit any of these contact points. If the section is missing or incomplete, add or fix it.
+
+## Release and Changelog Instructions
+
+When preparing a release or making release-related documentation updates, you must follow these rules:
+
+- Read `docs/RELEASING.md` first. Follow the documented process exactly.
+- Do not invent a new release process.
+- The release source of truth is `Qredex::SDK_VERSION` in `src/Qredex.php`. Use `./bump-version.sh <version>` or `composer version:bump <version>` for version bumps.
+- Review git history (`git log`) before writing or updating changelog entries.
+- `CHANGELOG.md` must exist. If it does not, create it immediately.
+- All changelog entries must be grounded in actual repository history and real implemented changes.
+- Do not invent versions, dates, entries, or release notes.
+- If the release guide conflicts with the repository state, stop and surface the conflict instead of guessing.
+- Run `composer check` as the pre-release verification step. The release workflow also runs `composer validate --strict`, `composer test`, and `composer analyse`.
+- Releases are semantic-version Git tags such as `v0.2.0`.
+- GitHub Actions validates tagged releases, creates a GitHub Release, and can optionally notify Packagist through `PACKAGIST_WEBHOOK_URL`.
+- Composer consumers should install tagged releases from Packagist or the GitHub repository source configured in Composer.
+
 ## Before Starting Work
 
 1. Read the smallest relevant portion of the supplied platform contract.
