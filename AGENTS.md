@@ -281,7 +281,7 @@ If a solution feels hacky, overly magical, or hard to explain to users of the SD
 ### Project environment
 
 - **PHP:** `^8.2` (strict minimum)
-- **Dependencies:** `guzzlehttp/guzzle ^7.9`, `psr/log ^3.0`
+- **Dependencies:** `ext-json`, `guzzlehttp/guzzle ^7.9`, `psr/log ^3.0`
 - **Dev dependencies:** `phpstan/phpstan ^2.1`, `phpunit/phpunit ^11.5`
 - **Static analysis:** PHPStan level 8 (`phpstan.neon.dist`)
 - **Autoload:** PSR-4 — `Qredex\` → `src/`, `Qredex\Tests\` → `tests/`
@@ -359,6 +359,11 @@ At minimum cover:
 - **`QredexTest`** — core SDK behavior: init, bootstrap, resource CRUD, error mapping.
 - **`CanonicalFlowTest`** — end-to-end IIT → PIT → paid order → refund flow with `FakeTransport`.
 - **`TransportAndErrorTest`** — transport-layer behavior: retries, error parsing, network failures.
+- **`ConfigTest`** — `QredexConfig` validation: timeout bounds, user-agent suffix, header guards, env parsing, `fromEnvironment()` wiring.
+- **`ErrorFactoryTest`** — HTTP status → typed exception mapping (`ApiError`, `AuthenticationError`, `AuthorizationError`, `NotFoundError`, `ConflictError`, `RateLimitError`, `ApiValidationError`).
+- **`ModelTest`** — `fromArray()` deserialization for all model value objects (`Creator`, `Link`, `LinkStats`, `InfluenceIntent`, `PurchaseIntent`, `OrderAttribution`, `Page`, `Timing`).
+- **`RequestObjectTest`** — `toArray()` serialization and validation for all request objects (`CreateCreatorRequest`, `CreateLinkRequest`, `IssueInfluenceIntentTokenRequest`, `LockPurchaseIntentRequest`, `RecordPaidOrderRequest`, `RecordRefundRequest`, filter objects).
+- **`ValidatorTest`** — internal `Validator` rules for all write operations (required fields, UUID format, amount bounds).
 - **`LiveIntegrationTest`** — real API calls; PHPUnit group `live`, excluded by default. Requires `QREDEX_CLIENT_ID` / `QREDEX_CLIENT_SECRET` env vars.
 - To instantiate the SDK in tests, use `QredexConfig::fromEnvironment()` with a `transport:` override to inject `FakeTransport`. Push an OAuth token response first, then the resource response:
 
@@ -372,6 +377,55 @@ At minimum cover:
       transport: $transport,
   ));
   ```
+
+### Environment variables
+
+`QredexConfig::fromEnvironment()` reads these env vars (all optional except where noted):
+
+| Variable | Required | Description |
+|---|---|---|
+| `QREDEX_CLIENT_ID` | **Yes** | OAuth client ID for Integrations auth |
+| `QREDEX_CLIENT_SECRET` | **Yes** | OAuth client secret |
+| `QREDEX_SCOPE` | No | OAuth scope string (defaults to `QredexScope` passed in code) |
+| `QREDEX_ENVIRONMENT` | No | `production` (default), `staging`, or `development` |
+| `QREDEX_BASE_URL` | No | Override base URL (bypasses environment resolution) |
+| `QREDEX_TIMEOUT_MS` | No | HTTP timeout in milliseconds (default: `10000`) |
+
+### QredexScope values
+
+`QredexScope` (`src/Auth/QredexScope.php`) is a string-backed enum:
+
+| Case | Value |
+|---|---|
+| `API` | `direct:api` |
+| `LINKS_READ` | `direct:links:read` |
+| `LINKS_WRITE` | `direct:links:write` |
+| `CREATORS_READ` | `direct:creators:read` |
+| `CREATORS_WRITE` | `direct:creators:write` |
+| `ORDERS_READ` | `direct:orders:read` |
+| `ORDERS_WRITE` | `direct:orders:write` |
+| `INTENTS_READ` | `direct:intents:read` |
+| `INTENTS_WRITE` | `direct:intents:write` |
+
+### QredexEnvironment values
+
+`QredexEnvironment` (`src/Config/QredexEnvironment.php`) is a string-backed enum:
+
+| Case | Base URL |
+|---|---|
+| `PRODUCTION` | `https://api.qredex.com` |
+| `STAGING` | `https://staging-api.qredex.com` |
+| `DEVELOPMENT` | `http://localhost:8080` |
+
+### CI/CD workflows
+
+GitHub Actions workflows in `.github/workflows/`:
+
+- **`ci.yml`** — runs on PR/push: `composer validate --strict`, `composer test`, `composer analyse`
+- **`auto-release.yml`** — creates GitHub Release from semantic-version tags (`v*`)
+- **`create-release-tag.yml`** — manual workflow to create a release tag
+- **`live-tests.yml`** — opt-in live integration tests against real API
+- **`publish-packagist.yml`** — notifies Packagist via `PACKAGIST_WEBHOOK_URL` on release
 
 ## Documentation Rules
 
