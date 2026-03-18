@@ -60,28 +60,28 @@ Programmatic configuration should prefer enum values or enum arrays over raw sco
 
 ### Creators
 
-- `creators()->create(array|CreateCreatorRequest): Creator`
+- `creators()->create(CreateCreatorRequest): Creator` as the canonical public path
 - `creators()->get(string $creatorId): Creator`
-- `creators()->list(array|ListCreatorsFilter $filters = []): Page<Creator>`
+- `creators()->list(ListCreatorsFilter|array $filters = []): Page<Creator>` with typed filters preferred
 
 ### Links
 
-- `links()->create(array|CreateLinkRequest): Link`
+- `links()->create(CreateLinkRequest): Link` as the canonical public path
 - `links()->get(string $linkId): Link`
-- `links()->list(array|ListLinksFilter $filters = []): Page<Link>`
+- `links()->list(ListLinksFilter|array $filters = []): Page<Link>` with typed filters preferred
 - `links()->getStats(string $linkId): LinkStats`
 
 ### Intents
 
-- `intents()->issueInfluenceIntentToken(array|IssueInfluenceIntentTokenRequest): InfluenceIntent`
-- `intents()->lockPurchaseIntent(array|LockPurchaseIntentRequest): PurchaseIntent`
+- `intents()->issueInfluenceIntentToken(IssueInfluenceIntentTokenRequest): InfluenceIntent`
+- `intents()->lockPurchaseIntent(LockPurchaseIntentRequest): PurchaseIntent`
 
 ### Orders
 
-- `orders()->recordPaidOrder(array|RecordPaidOrderRequest): OrderAttribution`
-- `orders()->list(array|ListOrdersFilter $filters = []): Page<OrderAttribution>`
+- `orders()->recordPaidOrder(RecordPaidOrderRequest): OrderAttribution`
+- `orders()->list(ListOrdersFilter|array $filters = []): Page<OrderAttribution>` with typed filters preferred
 - `orders()->getDetails(string $orderAttributionId): OrderAttribution`
 
 ### Refunds
 
-- `refunds()->recordRefund(array|RecordRefundRequest): OrderAttribution`
+- `refunds()->recordRefund(RecordRefundRequest): OrderAttribution`

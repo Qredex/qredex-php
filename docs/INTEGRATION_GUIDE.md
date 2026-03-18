@@ -132,7 +132,7 @@ $qredex->refunds()->recordRefund(new RecordRefundRequest(
 - Tokens are fetched automatically and reused until close to expiry.
 - The typed request objects mirror the canonical write payloads and are the safest default.
 - `QredexScope` is the preferred programmatic scope input. Raw scope strings remain for environment/bootstrap compatibility.
-- Legacy array payloads still work, but the typed request path is the preferred public API.
+- Legacy array payloads still work for compatibility, but new integrations should use typed request objects exclusively.
 - `Retry-After` is honored for opt-in read retries.
 - Client-side correlation ids can be emitted via `requestIdFactory` and optionally attached to a configured request header.
 - Keep `store_id`, creator identity, and external order/refund ids stable to preserve determinism and idempotency.

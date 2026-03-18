@@ -47,6 +47,7 @@ final readonly class RefundsClient
 
     /**
      * @param array<string, mixed>|RecordRefundRequest $payload
+     * Array payloads are compatibility-only. Prefer {@see RecordRefundRequest} for new integrations.
      *
      * @throws RequestValidationError
      * @throws AuthenticationError

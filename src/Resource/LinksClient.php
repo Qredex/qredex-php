@@ -51,6 +51,7 @@ final readonly class LinksClient
 
     /**
      * @param array<string, mixed>|CreateLinkRequest $payload
+     * Array payloads are compatibility-only. Prefer {@see CreateLinkRequest} for new integrations.
      *
      * @throws RequestValidationError
      * @throws AuthenticationError
@@ -93,6 +94,7 @@ final readonly class LinksClient
     /**
      * @param array<string, mixed>|ListLinksFilter $filters
      * @return Page<Link>
+     * Array filters are compatibility-only. Prefer {@see ListLinksFilter} for new integrations.
      *
      * @throws RequestValidationError
      * @throws AuthenticationError

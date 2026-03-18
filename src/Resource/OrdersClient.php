@@ -50,6 +50,7 @@ final readonly class OrdersClient
 
     /**
      * @param array<string, mixed>|RecordPaidOrderRequest $payload
+     * Array payloads are compatibility-only. Prefer {@see RecordPaidOrderRequest} for new integrations.
      *
      * @throws RequestValidationError
      * @throws AuthenticationError
@@ -75,6 +76,7 @@ final readonly class OrdersClient
     /**
      * @param array<string, mixed>|ListOrdersFilter $filters
      * @return Page<OrderAttribution>
+     * Array filters are compatibility-only. Prefer {@see ListOrdersFilter} for new integrations.
      *
      * @throws RequestValidationError
      * @throws AuthenticationError

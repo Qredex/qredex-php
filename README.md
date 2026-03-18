@@ -146,7 +146,7 @@ Programmatic configuration should prefer `QredexScope` values over raw scope str
 ## Stability
 
 - The canonical typed write flow is the primary stable public surface.
-- Legacy array payloads remain supported for concise adoption.
+- Legacy array payloads remain supported for backward compatibility only and should not be treated as the primary public contract.
 - The public surface is intentionally limited to Integrations API resource operations and automatic client-credentials auth.
 
 ## Public API

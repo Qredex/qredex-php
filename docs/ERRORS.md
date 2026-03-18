@@ -73,9 +73,14 @@ Every `Qredex\Error\QredexError` preserves these fields when available:
 use Qredex\Error\ApiValidationError;
 use Qredex\Error\QredexError;
 use Qredex\Error\RequestValidationError;
+use Qredex\Request\RecordPaidOrderRequest;
 
 try {
-    $qredex->orders()->recordPaidOrder([...]);
+    $qredex->orders()->recordPaidOrder(new RecordPaidOrderRequest(
+        storeId: '61abc354-dd8d-4a23-be02-ece77b1b4da6',
+        externalOrderId: 'order-100045',
+        currency: 'USD',
+    ));
 } catch (RequestValidationError $error) {
     echo $error->getMessage();
 } catch (ApiValidationError $error) {

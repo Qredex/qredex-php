@@ -50,6 +50,7 @@ final readonly class CreatorsClient
 
     /**
      * @param array<string, mixed>|CreateCreatorRequest $payload
+     * Array payloads are compatibility-only. Prefer {@see CreateCreatorRequest} for new integrations.
      *
      * @throws RequestValidationError
      * @throws AuthenticationError
@@ -92,6 +93,7 @@ final readonly class CreatorsClient
     /**
      * @param array<string, mixed>|ListCreatorsFilter $filters
      * @return Page<Creator>
+     * Array filters are compatibility-only. Prefer {@see ListCreatorsFilter} for new integrations.
      *
      * @throws RequestValidationError
      * @throws AuthenticationError

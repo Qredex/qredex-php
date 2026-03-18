@@ -30,14 +30,15 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 use Qredex\Auth\QredexScope;
 use Qredex\Config\QredexConfig;
 use Qredex\Qredex;
+use Qredex\Request\ListOrdersFilter;
 
 $qredex = Qredex::init(QredexConfig::fromEnvironment(
     scope: QredexScope::ORDERS_READ,
 ));
 
-$orders = $qredex->orders()->list([
-    'page' => 0,
-    'size' => 25,
-]);
+$orders = $qredex->orders()->list(new ListOrdersFilter(
+    page: 0,
+    size: 25,
+));
 
 var_dump($orders);
