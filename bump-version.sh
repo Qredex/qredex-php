@@ -54,9 +54,13 @@ if [[ $# -lt 1 ]]; then
     usage
 fi
 
-# Parse arguments
-NEW_VERSION="$1"
-SKIP_VALIDATION=false
+# Parse arguments and Ota task inputs
+NEW_VERSION="${OTA_INPUT_VERSION:-${1:-}}"
+SKIP_VALIDATION="${OTA_INPUT_SKIP_VALIDATION:-false}"
+
+if [[ -z "$NEW_VERSION" ]]; then
+    usage
+fi
 
 if [[ $# -ge 2 ]] && [[ "$2" == "--skip-validation" ]]; then
     SKIP_VALIDATION=true

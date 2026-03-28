@@ -1,0 +1,109 @@
+version: 1
+project:
+  name: qredex/php
+  description: Canonical PHP server SDK for the Qredex Integrations API
+  type: library
+metadata:
+  team: sdk
+  owner: qredex
+  repo_class: php-sdk
+runtimes:
+  php: '>=8.2'
+execution:
+  preferred: native
+  supported:
+    - native
+tools:
+  bash: '*'
+  composer: '*'
+tasks:
+  setup:
+    description: Install PHP dependencies
+    category: setup
+    run: composer install
+    safe_for_agent: true
+  analyse:
+    description: Run static analysis
+    category: test
+    run: composer run analyse
+    depends_on:
+      - setup
+    safe_for_agent: true
+  check:
+    description: Run the combined PHP checks
+    category: test
+    run: composer run check
+    depends_on:
+      - setup
+    safe_for_agent: true
+  test:
+    description: Run the PHP unit tests
+    category: test
+    run: composer run test
+    depends_on:
+      - setup
+    safe_for_agent: true
+  test:live:
+    description: Run the live PHP tests
+    category: test
+    run: composer run test:live
+    depends_on:
+      - setup
+    safe_for_agent: true
+  version:bump:
+    description: Bump the release version
+    category: release
+    script: |
+      ./bump-version.sh
+    inputs:
+      version:
+        description: New semantic version to apply
+        required: true
+      skip_validation:
+        description: Skip composer check before staging the version bump
+        default: false
+        allowed:
+          - true
+          - false
+  ci:
+    description: Run the PHP verification suite
+    category: test
+    run: composer run check
+    depends_on:
+      - setup
+    safe_for_agent: true
+agent:
+  entrypoint: setup
+  default_task: ci
+  safe_tasks:
+    - setup
+    - analyse
+    - check
+    - test
+    - test:live
+    - ci
+  verify_after_changes:
+    - analyse
+    - check
+    - test
+    - ci
+  writable_paths:
+    - src
+    - tests
+    - docs
+    - examples
+    - README.md
+    - bump-version.sh
+  protected_paths:
+    - vendor
+    - composer.lock
+  notes: |
+    Use the Ota workflow first for setup, validation, and task execution.
+    Treat Ota as the default workflow, the way npm is the default in Node repos.
+    Use `ota validate` to verify the contract.
+    Use `ota doctor` to inspect readiness and agent guidance.
+    Use `ota tasks` to discover runnable repo actions.
+    Use `ota run setup` to prepare the repo.
+    Use `ota run ci` to run the canonical verification path.
+    Keep the typed canonical backend flow explicit and stable.
+    Use composer run check as the primary verification path.

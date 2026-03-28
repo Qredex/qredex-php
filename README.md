@@ -41,6 +41,19 @@ It does not include Merchant API endpoints, browser/runtime logic, Shopify embed
 composer require qredex/php
 ```
 
+## Ota Workflow
+
+Use Ota for repo work, validation, and release prep:
+
+```bash
+ota run setup
+ota run analyse
+ota run test
+ota run test:live
+ota run version:bump --version 0.2.0
+ota run ci
+```
+
 ## Requirements
 
 - PHP 8.2 or newer

@@ -33,6 +33,8 @@ Use the version bump script for a guided release:
 
 ```bash
 # Bump version (runs validation checks automatically)
+ota run version:bump --version 0.2.0
+# or
 ./bump-version.sh 0.2.0
 # or
 composer version:bump 0.2.0
