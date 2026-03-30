@@ -19,11 +19,15 @@ tools:
 tasks:
   setup:
     description: Install PHP dependencies
+    notes: |
+      Use this first after cloning or when dependencies change.
     category: setup
     run: composer install
     safe_for_agent: true
   analyse:
     description: Run static analysis
+    notes: |
+      Use this to catch PHP issues before running the heavier test suites.
     category: test
     run: composer run analyse
     depends_on:
@@ -31,6 +35,8 @@ tasks:
     safe_for_agent: true
   check:
     description: Run the combined PHP checks
+    notes: |
+      Use this as the combined lint and quality gate.
     category: test
     run: composer run check
     depends_on:
@@ -38,6 +44,8 @@ tasks:
     safe_for_agent: true
   test:
     description: Run the PHP unit tests
+    notes: |
+      Use this for the standard unit test pass.
     category: test
     run: composer run test
     depends_on:
@@ -45,6 +53,8 @@ tasks:
     safe_for_agent: true
   test:live:
     description: Run the live PHP tests
+    notes: |
+      Use this when the live integration environment is available.
     category: test
     run: composer run test:live
     depends_on:
@@ -52,6 +62,8 @@ tasks:
     safe_for_agent: true
   version:bump:
     description: Bump the release version
+    notes: |
+      Use this when preparing a PHP release and updating the package version.
     category: release
     script: |
       ./bump-version.sh
@@ -67,6 +79,8 @@ tasks:
           - false
   ci:
     description: Run the PHP verification suite
+    notes: |
+      Use this as the canonical local verification path before merging changes.
     category: test
     run: composer run check
     depends_on:
