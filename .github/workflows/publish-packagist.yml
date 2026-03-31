@@ -18,9 +18,9 @@
 #  and limitations under the License.
 #
 #  If you need additional information or have any questions, please email: copyright@qredex.com
-name: Publish release
+name: Publish Packagist
 run-name: >-
-  Publish release from ${{ github.event.inputs.release_ref || github.ref_name }}
+  Publish Packagist from ${{ github.event.inputs.release_ref || github.event.workflow_run.head_sha || github.ref_name }}
 
 on:
   workflow_run:
