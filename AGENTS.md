@@ -469,7 +469,7 @@ When preparing a release or making release-related documentation updates, you mu
 
 - Read `docs/RELEASING.md` first. Follow the documented process exactly.
 - Do not invent a new release process.
-- The release source of truth is `Qredex::SDK_VERSION` in `src/Qredex.php`. Use `./bump-version.sh <version>` or `composer version:bump <version>` for version bumps.
+- The release source of truth is `Qredex::SDK_VERSION` in `src/Qredex.php`. Use `ota run version:bump --version <version>` or `OTA_INPUT_VERSION=<version> ./bump-version.sh` for version bumps.
 - Review git history (`git log`) before writing or updating changelog entries.
 - `CHANGELOG.md` must exist. If it does not, create it immediately.
 - All changelog entries must be grounded in actual repository history and real implemented changes.

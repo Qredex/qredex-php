@@ -33,37 +33,28 @@ NC='\033[0m' # No Color
 
 usage() {
     cat <<EOF
-Usage: $0 <version> [--skip-validation]
+Usage: OTA_INPUT_VERSION=1.2.3 [OTA_INPUT_SKIP_VALIDATION=true] $0
 
 Bump SDK_VERSION in src/Qredex.php to the specified version.
 
-Arguments:
-  <version>           New semantic version (e.g., 0.2.0 or v0.2.0)
-  --skip-validation   Skip running composer check before committing
+Environment variables:
+  OTA_INPUT_VERSION           New semantic version (e.g., 0.2.0 or v0.2.0)
+  OTA_INPUT_SKIP_VALIDATION   Skip running composer check before committing
 
 Examples:
-  $0 0.2.0
-  $0 v0.2.1
-  $0 1.0.0 --skip-validation
+  OTA_INPUT_VERSION=0.2.0 $0
+  OTA_INPUT_VERSION=v0.2.1 $0
+  OTA_INPUT_VERSION=1.0.0 OTA_INPUT_SKIP_VALIDATION=true $0
 
 EOF
     exit 1
 }
 
-if [[ $# -lt 1 ]]; then
-    usage
-fi
-
-# Parse arguments and Ota task inputs
-NEW_VERSION="${OTA_INPUT_VERSION:-${1:-}}"
+NEW_VERSION="${OTA_INPUT_VERSION:-}"
 SKIP_VALIDATION="${OTA_INPUT_SKIP_VALIDATION:-false}"
 
 if [[ -z "$NEW_VERSION" ]]; then
     usage
-fi
-
-if [[ $# -ge 2 ]] && [[ "$2" == "--skip-validation" ]]; then
-    SKIP_VALIDATION=true
 fi
 
 # Normalize version (remove 'v' prefix if present)

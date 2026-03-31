@@ -64,12 +64,18 @@ tasks:
     description: Bump the release version
     notes: |
       Use this when preparing a PHP release and updating the package version.
+      The task runner forwards `version` to `OTA_INPUT_VERSION`.
+      Typical flow:
+        ota run version:bump --version 0.2.0
+        ota run ci
+      Direct script usage can set `OTA_INPUT_VERSION` explicitly:
+        OTA_INPUT_VERSION=0.2.0 ./bump-version.sh
     category: release
     script: |
       ./bump-version.sh
     inputs:
       version:
-        description: New semantic version to apply
+        description: New release version to apply to the package
         required: true
       skip_validation:
         description: Skip composer check before staging the version bump

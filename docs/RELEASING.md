@@ -35,12 +35,10 @@ Use the version bump script for a guided release:
 # Bump version (runs validation checks automatically)
 ota run version:bump --version 0.2.0
 # or
-./bump-version.sh 0.2.0
-# or
-composer version:bump 0.2.0
+OTA_INPUT_VERSION=0.2.0 ./bump-version.sh
 
 # Skip validation if needed
-./bump-version.sh 0.2.0 --skip-validation
+OTA_INPUT_VERSION=0.2.0 OTA_INPUT_SKIP_VALIDATION=true ./bump-version.sh
 ```
 
 The script will:
