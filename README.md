@@ -54,6 +54,16 @@ ota run version:bump --version 0.2.0
 ota run ci
 ```
 
+## Support Matrix
+
+| Area | Supported |
+| --- | --- |
+| PHP runtime | `8.2+` |
+| Composer | `2.x` |
+| Default CI | `composer validate --strict`, `composer test`, `composer analyse` |
+| Live tests | Manual-only `composer test:live` or GitHub `workflow_dispatch` |
+| Release flow | `ota run version:bump --version <version>` then tag-based publish |
+
 ## Requirements
 
 - PHP 8.2 or newer
@@ -242,6 +252,7 @@ The SDK separates local validation, API validation, and protocol/response failur
 
 - `composer test` runs unit and mocked transport tests only
 - `composer test:live` runs the opt-in live integration suite
+- Live tests exercise the canonical integrations flow against a real API and are intentionally excluded from default CI and release checks.
 
 Live tests are skipped unless `QREDEX_LIVE_ENABLED=1` and the required `QREDEX_LIVE_*` variables are set.
 

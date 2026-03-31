@@ -62,7 +62,7 @@ The script will:
    - Creates and pushes the `vX.Y.Z` tag if it does not already exist.
 
 2. [`.github/workflows/publish-packagist.yml`](../.github/workflows/publish-packagist.yml)
-   - Triggered by the new `vX.Y.Z` tag.
+   - Triggered when `Auto-release` completes successfully, or when a `vX.Y.Z` tag is pushed manually.
    - Validates the package (`composer validate --strict`).
    - Installs dependencies and runs `composer test` + `composer analyse`.
    - Performs a `--no-dev` package smoke install.
@@ -114,13 +114,6 @@ composer test
 composer analyse
 composer install --no-interaction --prefer-dist --no-dev
 ```
-
-## Manual release (fallback)
-
-If you need to create a tag manually:
-
-- GitHub Actions: **Actions → "Create release tag"** → enter version
-- Local CLI: `git tag -a vX.Y.Z -m "Release vX.Y.Z" && git push origin vX.Y.Z`
 
 ## Live Tests
 

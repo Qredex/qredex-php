@@ -23,6 +23,12 @@ run-name: >-
   Publish release from ${{ github.event.inputs.release_ref || github.ref_name }}
 
 on:
+  workflow_run:
+    workflows:
+      - Auto-release
+      - Create release tag
+    types:
+      - completed
   push:
     tags:
       - "v*.*.*"
@@ -42,6 +48,7 @@ concurrency:
 
 jobs:
   publish:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 

@@ -27,6 +27,19 @@ All notable changes to this SDK will be documented in this file.
 
 ## [Unreleased]
 
+## [0.1.2] — 2026-03-31
+
+### Added
+
+- Opt-in live integration tests with `composer test:live` and a manual GitHub Actions workflow.
+- OTA release notes and version bump input handling for env-driven release automation.
+
+### Changed
+
+- Simplified the public README release guidance and added a compact support matrix.
+- Fixed the release workflow chain so version bumps create a tag and the tag run creates the GitHub Release.
+- Simplified the release docs to center the canonical OTA-driven version bump path.
+
 ## [0.1.0] — 2026-03-16
 
 ### Added
