@@ -50,7 +50,7 @@ ota run setup
 ota run analyse
 ota run test
 ota run test:live
-ota run version:bump --version 0.2.0
+ota run version:bump --version minor
 ota run ci
 ```
 
@@ -62,7 +62,7 @@ ota run ci
 | Composer | `2.x` |
 | Default CI | `composer validate --strict`, `composer test`, `composer analyse` |
 | Live tests | Manual-only `composer test:live` or GitHub `workflow_dispatch` |
-| Release flow | `ota run version:bump --version <version>` then tag-based publish |
+| Release flow | `ota run version:bump --version major|minor|patch` or an explicit semver, then tag-based publish |
 
 ## Requirements
 

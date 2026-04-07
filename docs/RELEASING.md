@@ -33,12 +33,12 @@ Use the version bump script for a guided release:
 
 ```bash
 # Bump version (runs validation checks automatically)
-ota run version:bump --version 0.2.0
+ota run version:bump --version minor
 # or
-OTA_INPUT_VERSION=0.2.0 ./bump-version.sh
+OTA_INPUT_VERSION=minor ./bump-version.sh
 
 # Skip validation if needed
-OTA_INPUT_VERSION=0.2.0 OTA_INPUT_SKIP_VALIDATION=true ./bump-version.sh
+OTA_INPUT_VERSION=major OTA_INPUT_SKIP_VALIDATION=true ./bump-version.sh
 ```
 
 The script will:

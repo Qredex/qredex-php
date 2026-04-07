@@ -33,36 +33,59 @@ NC='\033[0m' # No Color
 
 usage() {
     cat <<EOF
-Usage: OTA_INPUT_VERSION=1.2.3 [OTA_INPUT_SKIP_VALIDATION=true] $0
+Usage: OTA_INPUT_VERSION=major|minor|patch|1.2.3 [OTA_INPUT_SKIP_VALIDATION=true] $0
 
-Bump SDK_VERSION in src/Qredex.php to the specified version.
+Bump SDK_VERSION in src/Qredex.php to the next release version or an explicit version.
 
 Environment variables:
-  OTA_INPUT_VERSION           New semantic version (e.g., 0.2.0 or v0.2.0)
+  OTA_INPUT_VERSION           Release bump selector or semantic version
   OTA_INPUT_SKIP_VALIDATION   Skip running composer check before committing
 
 Examples:
+  OTA_INPUT_VERSION=patch $0
+  OTA_INPUT_VERSION=minor $0
+  OTA_INPUT_VERSION=major OTA_INPUT_SKIP_VALIDATION=true $0
   OTA_INPUT_VERSION=0.2.0 $0
   OTA_INPUT_VERSION=v0.2.1 $0
-  OTA_INPUT_VERSION=1.0.0 OTA_INPUT_SKIP_VALIDATION=true $0
 
 EOF
     exit 1
 }
 
-NEW_VERSION="${OTA_INPUT_VERSION:-}"
+VERSION_INPUT="${OTA_INPUT_VERSION:-}"
 SKIP_VALIDATION="${OTA_INPUT_SKIP_VALIDATION:-false}"
 
-if [[ -z "$NEW_VERSION" ]]; then
+if [[ -z "$VERSION_INPUT" ]]; then
     usage
 fi
 
-# Normalize version (remove 'v' prefix if present)
-NEW_VERSION="${NEW_VERSION#v}"
+resolve_version() {
+    local current_version="$1"
+    local input_version="$2"
+    local major minor patch
 
-# Validate semantic version format
-if [[ ! "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    echo -e "${RED}Error: Version must be in semantic version format (e.g., 0.2.0)${NC}" >&2
+    IFS='.' read -r major minor patch <<<"$current_version"
+
+    case "$input_version" in
+        major)
+            echo "$((major + 1)).0.0"
+            ;;
+        minor)
+            echo "$major.$((minor + 1)).0"
+            ;;
+        patch)
+            echo "$major.$minor.$((patch + 1))"
+            ;;
+        *)
+            echo "$input_version"
+            ;;
+    esac
+}
+
+VERSION_INPUT="${VERSION_INPUT#v}"
+
+if [[ ! "$VERSION_INPUT" =~ ^(major|minor|patch|v?[0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+    echo -e "${RED}Error: Version must be major, minor, patch, or semantic version (e.g., 0.2.0)${NC}" >&2
     exit 1
 fi
 
@@ -72,6 +95,12 @@ CURRENT_VERSION=$(sed -n "s/.*public const SDK_VERSION = '\([0-9]*\.[0-9]*\.[0-9
 if [[ -z "$CURRENT_VERSION" ]]; then
     echo -e "${RED}Error: Could not extract current SDK_VERSION from $QREDEX_PHP${NC}" >&2
     exit 1
+fi
+
+if [[ "$VERSION_INPUT" =~ ^(major|minor|patch)$ ]]; then
+    NEW_VERSION="$(resolve_version "$CURRENT_VERSION" "$VERSION_INPUT")"
+else
+    NEW_VERSION="$VERSION_INPUT"
 fi
 
 echo -e "${YELLOW}Current version: ${CURRENT_VERSION}${NC}"
