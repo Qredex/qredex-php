@@ -17,9 +17,10 @@ execution:
   lifecycle: persistent
   backends:
     container:
-      image: php:8.2-cli-bookworm
+      image: composer:2.9.7
       engines:
         - docker
+        - podman
 tools:
   bash: '*'
   composer: '2'
