@@ -60,6 +60,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
+      - name: Setup ota
+        uses: ota-run/setup@v1
+        with:
+          ota-version: 1.5.2
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -92,25 +97,17 @@ jobs:
         if: steps.release.outputs.should_publish != 'true'
         run: echo "Skipping publish because this ref is not a release tag."
 
-      - name: Validate composer.json
+      - name: Validate ota contract
         if: steps.release.outputs.should_publish == 'true'
-        run: composer validate --strict
+        run: ota validate
 
-      - name: Install dependencies
+      - name: Run canonical CI
         if: steps.release.outputs.should_publish == 'true'
-        run: composer install --no-interaction --prefer-dist
-
-      - name: Run tests
-        if: steps.release.outputs.should_publish == 'true'
-        run: composer test
-
-      - name: Run static analysis
-        if: steps.release.outputs.should_publish == 'true'
-        run: composer analyse
+        run: ota run ci
 
       - name: Package smoke test
         if: steps.release.outputs.should_publish == 'true'
-        run: composer install --no-interaction --prefer-dist --no-dev
+        run: ota run package:smoke
 
       - name: Create GitHub Release
         if: steps.release.outputs.should_publish == 'true'

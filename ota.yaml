@@ -60,6 +60,15 @@ tasks:
     depends_on:
       - setup
     safe_for_agent: true
+  package:smoke:
+    description: Verify the production dependency graph without dev packages
+    notes: |
+      Use this to confirm the package still installs cleanly in a production-style dependency set.
+    category: test
+    run: composer install --no-interaction --prefer-dist --no-dev
+    depends_on:
+      - setup
+    safe_for_agent: true
   version:bump:
     description: Bump the release version
     notes: |
@@ -88,7 +97,9 @@ tasks:
     notes: |
       Use this as the canonical local verification path before merging changes.
     category: test
-    run: composer run check
+    script: |
+      composer validate --strict
+      composer run check
     depends_on:
       - setup
     safe_for_agent: true
@@ -106,11 +117,13 @@ agent:
     - check
     - test
     - test:live
+    - package:smoke
     - ci
   verify_after_changes:
     - analyse
     - check
     - test
+    - package:smoke
     - ci
   writable_paths:
     - src
@@ -130,5 +143,6 @@ agent:
     Use `ota tasks` to discover runnable repo actions.
     Use `ota run setup` to prepare the repo.
     Use `ota run ci` to run the canonical verification path.
+    Use `ota run package:smoke` when you need to confirm the production dependency graph still installs cleanly.
     Keep the typed canonical backend flow explicit and stable.
     Use composer run check as the primary verification path.

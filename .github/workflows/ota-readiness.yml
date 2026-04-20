@@ -44,7 +44,7 @@ jobs:
         with:
           command: receipt
           path: .
-          ota-version: 1.4.7
+          ota-version: 1.5.2
           archive: true
           annotate: true
           fail-on-error: false
