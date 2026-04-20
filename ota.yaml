@@ -10,12 +10,19 @@ metadata:
 runtimes:
   php: '>=8.2'
 execution:
-  preferred: native
+  preferred: container
   supported:
     - native
+    - container
+  lifecycle: persistent
+  backends:
+    container:
+      image: php:8.2-cli-bookworm
+      engines:
+        - docker
 tools:
   bash: '*'
-  composer: '*'
+  composer: '2'
 tasks:
   setup:
     description: Install PHP dependencies
@@ -97,9 +104,10 @@ tasks:
     notes: |
       Use this as the canonical local verification path before merging changes.
     category: test
-    script: |
-      composer validate --strict
-      composer run check
+    run: composer validate --strict
+    after_success:
+      - check
+      - test
     depends_on:
       - setup
     safe_for_agent: true
