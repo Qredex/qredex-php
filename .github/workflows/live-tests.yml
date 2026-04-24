@@ -81,4 +81,4 @@ jobs:
         run: ota validate
 
       - name: Run live tests
-        run: ota run test:live
+        run: ota run test:live --ephemeral

@@ -55,7 +55,7 @@ jobs:
         run: ota validate
 
       - name: Run canonical CI
-        run: ota run ci
+        run: ota run ci --ephemeral
 
       - name: Package smoke test
-        run: ota run package:smoke
+        run: ota run package:smoke --ephemeral

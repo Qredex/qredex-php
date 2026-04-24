@@ -103,11 +103,11 @@ jobs:
 
       - name: Run canonical CI
         if: steps.release.outputs.should_publish == 'true'
-        run: ota run ci
+        run: ota run ci --ephemeral
 
       - name: Package smoke test
         if: steps.release.outputs.should_publish == 'true'
-        run: ota run package:smoke
+        run: ota run package:smoke --ephemeral
 
       - name: Create GitHub Release
         if: steps.release.outputs.should_publish == 'true'
