@@ -210,6 +210,32 @@ Use plan mode whenever work is more than 3 steps or touches architecture.
 - Do not widen scope silently.
 - Public API additions and changes are product decisions, not casual local edits.
 
+## Subagent Delegation Policy
+
+Use subagents only when they improve quality, speed, or risk control.
+
+Spawn subagents when:
+- The task can be split into independent workstreams.
+- An independent review would materially reduce risk.
+- Research, testing, security review, or codebase inspection can happen in parallel.
+
+Do not spawn subagents when:
+- The task is trivial or narrowly scoped.
+- Multiple agents would duplicate the same work.
+- Coordination overhead exceeds the benefit.
+
+When using subagents:
+1. Give each subagent a narrow objective.
+2. Prefer read-only investigation unless edits are explicitly useful.
+3. Keep the main agent accountable for final decisions.
+4. Review and challenge subagent outputs before integrating them.
+5. Report what each subagent checked, what was accepted, and what was rejected.
+
+Default pattern:
+- One main implementation path.
+- One independent reviewer or test-design subagent when useful.
+- Avoid committee-style delegation.
+
 ## Elegance Check
 
 For non-trivial changes, pause and ask: **Is there a more elegant way?**

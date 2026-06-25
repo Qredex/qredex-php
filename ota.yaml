@@ -10,17 +10,18 @@ metadata:
 runtimes:
   php: '>=8.2'
 execution:
-  preferred: container
-  supported:
-    - native
-    - container
-  lifecycle: ephemeral
-  backends:
-    container:
-      image: composer:2.9.7
-      engines:
-        - docker
-        - podman
+  default_context: app
+  contexts:
+    host:
+      backend: native
+    app:
+      backend: container
+      lifecycle: ephemeral
+      container:
+        image: composer:2.9.7
+        engines:
+          - docker
+          - podman
 tools:
   bash: '*'
   composer: '2'
@@ -30,14 +31,18 @@ tasks:
     notes: |
       Use this first after cloning or when dependencies change.
     category: setup
-    run: composer install
+    command:
+      exe: composer
+      args: [install]
     safe_for_agent: true
   analyse:
     description: Run static analysis
     notes: |
       Use this to catch PHP issues before running the heavier test suites.
     category: test
-    run: composer run analyse
+    command:
+      exe: composer
+      args: [run, analyse]
     depends_on:
       - setup
     safe_for_agent: true
@@ -46,7 +51,9 @@ tasks:
     notes: |
       Use this as the combined lint and quality gate.
     category: test
-    run: composer run check
+    command:
+      exe: composer
+      args: [run, check]
     depends_on:
       - setup
     safe_for_agent: true
@@ -55,7 +62,9 @@ tasks:
     notes: |
       Use this for the standard unit test pass.
     category: test
-    run: composer run test
+    command:
+      exe: composer
+      args: [run, test]
     depends_on:
       - setup
     safe_for_agent: true
@@ -64,7 +73,9 @@ tasks:
     notes: |
       Use this when the live integration environment is available.
     category: test
-    run: composer run test:live
+    command:
+      exe: composer
+      args: [run, test:live]
     depends_on:
       - setup
     safe_for_agent: true
@@ -73,7 +84,9 @@ tasks:
     notes: |
       Use this to confirm the package still installs cleanly in a production-style dependency set.
     category: test
-    run: composer install --no-interaction --prefer-dist --no-dev
+    command:
+      exe: composer
+      args: [install, --no-interaction, --prefer-dist, --no-dev]
     depends_on:
       - setup
     safe_for_agent: true
@@ -88,8 +101,9 @@ tasks:
       Direct script usage can set `OTA_INPUT_VERSION` explicitly:
         OTA_INPUT_VERSION=minor ./bump-version.sh
     category: release
-    script: |
-      ./bump-version.sh
+    command:
+      exe: ./bump-version.sh
+      args: []
     inputs:
       version:
         description: Release bump selector or semantic version to apply to the package
@@ -105,23 +119,34 @@ tasks:
     notes: |
       Use this as the canonical local verification path before merging changes.
     category: test
-    run: composer validate --strict
+    command:
+      exe: composer
+      args: [validate, --strict]
     after_success:
       - check
       - test
     depends_on:
       - setup
     safe_for_agent: true
+workflows:
+  default: verify
+  verify:
+    description: Canonical PHP SDK verification path.
+    setup:
+      task: setup
+    run:
+      task: ci
 agent:
-  entrypoint: setup
+  posture: readiness_strict
+  entrypoint: ci
   default_task: ci
   bootstrap:
     ota:
       note: Only install ota if it is missing and installation is approved.
-      sh: curl -fsSL https://dist.ota.run/install.sh | sh
-      powershell: irm https://dist.ota.run/install.ps1 | iex
+      source:
+        kind: version
+        version: v1.6.21
   safe_tasks:
-    - setup
     - analyse
     - check
     - test
@@ -142,6 +167,7 @@ agent:
     - README.md
     - bump-version.sh
   protected_paths:
+    - ota.yaml
     - vendor
     - composer.lock
   notes: |
@@ -150,8 +176,7 @@ agent:
     Use `ota validate` to verify the contract.
     Use `ota doctor` to inspect readiness and agent guidance.
     Use `ota tasks` to discover runnable repo actions.
-    Use `ota run setup` to prepare the repo.
-    Use `ota run ci` to run the canonical verification path.
+    Use `ota up --workflow verify` for the canonical verification path.
     Use `ota run package:smoke` when you need to confirm the production dependency graph still installs cleanly.
     Keep the typed canonical backend flow explicit and stable.
     Use composer run check as the primary verification path.
